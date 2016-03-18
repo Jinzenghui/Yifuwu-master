@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.biac.yifuwu.PendingOrder">
+
+    <Button
+        android:id="@+id/workorder_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="翼服务-新工单"
+        android:textSize="18sp"
+        android:textColor="@color/colorWhite"
+        android:background="@color/colorPeacockBlue"
+        />
+
+    <ListView
+        android:id="@+id/listview"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_below="@id/workorder_title"
+        />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        >
+
+        <RelativeLayout
+            android:id="@+id/pagestatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+            <TextView
+                android:id="@+id/totalpagenumbers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:textSize="15sp"
+                android:textColor="@color/colorBlack"
+                />
+
+            <TextView
+                android:id="@+id/pagenumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:textSize="15sp"
+                android:textColor="@color/colorBlack"
+                />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/listmessage"
+            android:orientation="horizontal"
+            >
+
+            <Button
+                android:id="@+id/btnLeft"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:text="上一页"
+                android:textSize="20sp"
+                android:textColor="@color/colorBlack"
+                android:background="@color/colorPeacockBlue"
+                />
+
+            <Button
+                android:id="@+id/workorderback"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="返回"
+                android:textSize="20sp"
+                android:textColor="@color/colorBlack"
+                android:background="@color/colorTurquoise"
+                />
+
+
+            <Button
+                android:id="@+id/btnRight"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:text="下一页"
+                android:textSize="20sp"
+                android:textColor="@color/colorBlack"
+                android:background="@color/colorPeacockBlue"
+                />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

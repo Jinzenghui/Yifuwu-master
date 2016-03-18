@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.biac.yifuwu.OrderDetail">
+
+    <Button
+        android:id="@+id/detailmessage_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="翼服务-新工单"
+        android:textColor="@color/colorWhite"
+        android:background="@color/colorPeacockBlue"
+        />
+
+    <LinearLayout
+        android:id="@+id/detailmessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@id/detailmessage_title"
+        >
+
+        <TextView
+            android:id="@+id/ordernumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="工单编号   16030854321"
+            android:textColor="@color/colorBlack"
+            />
+
+        <TextView
+            android:id="@+id/ordergrade"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="工单等级    一般"
+            android:textColor="@color/colorBlack"
+            />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="剩余时间"
+                android:textColor="@color/colorBlack"
+                />
+
+            <TextView
+                android:id="@+id/resttime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:textColor="@color/colorBlack"
+                />
+
+        </LinearLayout>
+
+
+
+        <TextView
+            android:id="@+id/begintime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="发起时间   2016/3/8 12:28"
+            android:textColor="@color/colorBlack"
+            />
+
+        <TextView
+            android:id="@+id/type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="类        型   2G语音投诉"
+            android:textColor="@color/colorBlack"
+            />
+
+        <TextView
+            android:id="@+id/area"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="地        区   宜昌市兴山县"
+            android:textColor="@color/colorBlack"
+            />
+
+        <TextView
+            android:id="@+id/usertelephonenumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="用户号码    18907182187"
+            android:textColor="@color/colorBlack"
+            />
+
+        <TextView
+            android:id="@+id/symptom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="故障现象    2G语音主叫失败"
+            android:textColor="@color/colorBlack"
+            />
+
+        <TextView
+            android:id="@+id/complaintstime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="投诉时间    2016/3/8  11:47"
+            android:textColor="@color/colorBlack"
+            />
+
+    </LinearLayout>.
+
+    <RelativeLayout
+        android:id="@+id/complaints_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/detailmessage"
+        >
+
+        <TextView
+            android:id="@+id/itemdetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="投诉地点"
+            android:textColor="@color/colorBlack"
+            />
+
+        <TextView
+            android:id="@+id/complaints_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/itemdetail"
+            android:layout_marginLeft="13dp"
+            android:clickable="true"
+            android:text="宜昌市兴山县昭君镇米仓渡口"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/guestbook"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@id/complaints_time"
+        >
+
+        <TextView
+            android:id="@+id/guestbook_title"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:text="用户留言"
+            android:textColor="@color/colorBlack"
+            android:textSize="20sp"
+            android:background="@drawable/textview_border"
+            android:layout_alignParentLeft="true"
+            />
+
+        <TextView
+            android:id="@+id/guestbook_message"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:clickable="true"
+            android:text="上得了网，打不了电话，快点解决！！！"
+            android:textSize="18sp"
+            android:textColor="@color/colorBlack"
+            android:background="@drawable/textview_border"
+            android:layout_toRightOf="@id/guestbook_title"
+            android:layout_alignTop="@id/guestbook_title"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/premessage"
+        android:layout_width="fill_parent"
+        android:layout_height="200dp"
+        android:layout_below="@id/guestbook"
+        android:orientation="horizontal"
+        >
+
+        <TextView
+            android:id="@+id/preprocessingmessage_title"
+            android:layout_height="100dp"
+            android:layout_width="100dp"
+            android:text="预处理信息"
+            android:textSize="20sp"
+            android:textColor="@color/colorBlack"
+            android:background="@drawable/textview_border"
+            />
+
+        <TextView
+            android:id="@+id/preprocessingmessage"
+            android:layout_height="100dp"
+            android:layout_width="match_parent"
+            android:clickable="true"
+            android:text="关联基站/小区有故障"
+            android:textSize="18sp"
+            android:textColor="@color/colorBlack"
+            android:background="@drawable/textview_border"
+            android:layout_toRightOf="@id/preprocessingmessage_title"
+            android:layout_alignTop="@id/preprocessingmessage_title"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_alignParentBottom="true"
+        >
+
+        <Button
+            android:id="@+id/accept"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="接单"
+            android:textColor="@color/colorWhite"
+            android:textSize="30sp"
+            android:background="@drawable/btndone"
+            android:layout_alignParentLeft="true"
+            />
+
+        <Button
+            android:id="@+id/giveup"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="返回"
+            android:textColor="@color/colorWhite"
+            android:textSize="30sp"
+            android:background="@drawable/button_shape"
+            android:layout_alignParentRight="true"
+            />
+        
+    </RelativeLayout>
+
+</RelativeLayout>
