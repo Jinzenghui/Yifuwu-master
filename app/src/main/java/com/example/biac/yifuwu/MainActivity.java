@@ -1,13 +1,14 @@
 package com.example.biac.yifuwu;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -26,7 +27,7 @@ import Pojo.UserInfo;
 import Pojo.UserLogin;
 import Utils.NetUtils;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     private Button logInBtn;
     private EditText userName, password;
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
         sp = this.getSharedPreferences("userInfo", Context.MODE_PRIVATE);
