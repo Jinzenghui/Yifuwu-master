@@ -6,9 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -32,7 +36,8 @@ import Utils.NetUtils;
 public class MainActivity extends Activity {
 
     private Button logInBtn;
-    private EditText userName, password;
+    private AutoCompleteTextView userName;
+    private EditText password;
     private CheckBox remember_pwd, auto_login;
     private String userNameValue, passwordValue;
     private SharedPreferences sp;
@@ -46,10 +51,32 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         sp = this.getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        userName = (EditText)findViewById(R.id.Username);
-        password = (EditText)findViewById(R.id.Password);
-        remember_pwd = (CheckBox)findViewById(R.id.rememberPassword);
-        auto_login = (CheckBox)findViewById(R.id.autoLogin);
+
+        initView();
+
+        userName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String[] allUserName = new String[sp.getAll().size()];
+                allUserName = sp.getAll().keySet().toArray(new String[0]);
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line,allUserName);
+
+                userName.setAdapter(adapter);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(remember_pwd.isChecked()) {
+                    password.setText(sp.getString(userName.getText().toString(), ""));
+                }
+            }
+        });
 
         if(sp.getBoolean("ISCHECK", false))
         {
@@ -70,7 +97,7 @@ public class MainActivity extends Activity {
             }
         }
 
-        logInBtn = (Button) findViewById(R.id.LoginButton);
+
         logInBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,25 +106,15 @@ public class MainActivity extends Activity {
                 userNameValue = userName.getText().toString();
                 passwordValue = password.getText().toString();
 
-                    if (remember_pwd.isChecked()) {
-                        SharedPreferences.Editor editor = sp.edit();
-                        editor.putString("USER_NAME", userNameValue);
-                        editor.putString("PASSWORD", passwordValue);
-                        editor.commit();
-                    }
+                if (remember_pwd.isChecked()) {
+                    SharedPreferences.Editor editor = sp.edit();
+                    editor.putString("USER_NAME", userNameValue);
+                    editor.putString("PASSWORD", passwordValue);
+                    editor.commit();
+                }
 
+                userLogin(userNameValue, passwordValue, "http://115.156.245.150:8080/AndroidApp/login", "userurl");
 
-//                Intent intent = new Intent();
-//                intent.setClass(MainActivity.this, login.class);
-//                startActivity(intent);
-
-//                    Intent intent = new Intent(MainActivity.this, login.class);
-//                    startActivity(intent);
-                    userLogin(userNameValue, passwordValue, "http://115.156.245.150:8080/AndroidApp/login", "userurl");
-
-//                 else {
-//                    Toast.makeText(MainActivity.this, "用户名或密码错误， 请重新登录", Toast.LENGTH_LONG).show();
-//                }
             }
         });
 
@@ -125,10 +142,23 @@ public class MainActivity extends Activity {
 
     }
 
+    public void initView(){
+
+        userName = (AutoCompleteTextView)findViewById(R.id.Username);
+
+        password = (EditText)findViewById(R.id.Password);
+        remember_pwd = (CheckBox)findViewById(R.id.rememberPassword);
+        auto_login = (CheckBox)findViewById(R.id.autoLogin);
+
+        logInBtn = (Button) findViewById(R.id.LoginButton);
+
+    }
+
+
     /*
     用户登录
      */
-    public void userLogin(String name, String password, String loginUrl, String userUrl){
+    public void userLogin(String name, final String password, String loginUrl, String userUrl){
          /*
                 登录流程
                  */
@@ -138,12 +168,16 @@ public class MainActivity extends Activity {
 
         final Application app = this.getApplication();
 
+        final String usernameTmp = name;
+
         Callback callback = new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
                 Toast.makeText(MainActivity.this, "用户名或密码错误， 请重新登录", Toast.LENGTH_LONG).show();
 
             }
+
+
 
             @Override
             public void onResponse(Response response) throws IOException {
@@ -167,6 +201,9 @@ public class MainActivity extends Activity {
                     String uJson = "{user_id:"+login.data.getUserId()+"}";
                     RequestBody body = new FormEncodingBuilder().add("user_id", login.data.getUserId()+"").build();
 
+                    if(remember_pwd.isChecked()) {
+                        sp.edit().putString(usernameTmp, password).commit();
+                    }
 
                     try{
                         NetUtils.postJson("http://115.156.245.150:8080/AndroidApp/getUserInfo", body, app, new Callback() {
@@ -192,7 +229,6 @@ public class MainActivity extends Activity {
                         Toast.makeText(MainActivity.this, "用户名或密码错误， 请重新登录", Toast.LENGTH_LONG).show();
                     }
 
-
                 }else{
                     //登录失败
 //                    Looper.prepare();
@@ -208,13 +244,11 @@ public class MainActivity extends Activity {
             }
         };
 
-
         Log.i("fl", gson.toJson(u));
         RequestBody body = new FormEncodingBuilder().add("user_name", u.getUser_name()).add("user_password", u.getUser_password()).build();
 
-
         try{
-            NetUtils.postJson("http://115.156.245.150:8080/AndroidApp/login",body, this.getApplication(), callback);
+            NetUtils.postJson("http://115.156.245.150:8080/AndroidApp/login", body, this.getApplication(), callback);
 
         }catch(IOException e){
             //登录失败处理
