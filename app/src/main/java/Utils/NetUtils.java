@@ -1,7 +1,6 @@
 package Utils;
 
 import android.app.Application;
-import android.content.Context;
 
 import com.example.biac.yifuwu.MyApplication;
 import com.squareup.okhttp.Callback;
@@ -9,10 +8,8 @@ import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 
 import java.io.IOException;
-import java.util.concurrent.Callable;
 
 /**
  * Created by fanlei on 16/3/15.
@@ -21,9 +18,11 @@ public class NetUtils {
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-    public static void postJson(String url, String json, Application app, Callback callback) throws IOException {
+    public static void postJson(String url, RequestBody body, Application app, Callback callback) throws IOException {
         OkHttpClient client = ((MyApplication)app).getClient();
-        RequestBody body = RequestBody.create(JSON, json);
+//        RequestBody body = RequestBody.create(JSON, json);
+
+
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
@@ -44,3 +43,4 @@ public class NetUtils {
     }
 
 }
+

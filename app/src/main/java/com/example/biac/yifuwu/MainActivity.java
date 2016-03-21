@@ -17,7 +17,9 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
 import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 
 import java.io.IOException;
@@ -63,8 +65,7 @@ public class MainActivity extends Activity {
                 auto_login.setChecked(true);
 
                 //登录流程
-               userLogin(name, password, "loginurl", "userurl");
-
+               userLogin(name, password, "localhost:8080/AndroidApp/login", "userurl");
 
             }
         }
@@ -74,6 +75,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
 
+                //获取用户输入的用户名和密码
                 userNameValue = userName.getText().toString();
                 passwordValue = password.getText().toString();
 
@@ -85,13 +87,13 @@ public class MainActivity extends Activity {
                     }
 
 
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, login.class);
-                startActivity(intent);
+//                Intent intent = new Intent();
+//                intent.setClass(MainActivity.this, login.class);
+//                startActivity(intent);
 
 //                    Intent intent = new Intent(MainActivity.this, login.class);
 //                    startActivity(intent);
-//                    userLogin(userNameValue, passwordValue, "loginurl", "userurl");
+                    userLogin(userNameValue, passwordValue, "http://115.156.245.150:8080/AndroidApp/login", "userurl");
 
 //                 else {
 //                    Toast.makeText(MainActivity.this, "用户名或密码错误， 请重新登录", Toast.LENGTH_LONG).show();
@@ -134,7 +136,6 @@ public class MainActivity extends Activity {
 
         final Gson gson = new Gson();
 
-
         final Application app = this.getApplication();
 
         Callback callback = new Callback() {
@@ -153,7 +154,7 @@ public class MainActivity extends Activity {
 
 //                    Log.i("fl", response.body().charStream().toString());
                     login =  gson.fromJson(response.body().charStream(), Login.class);
-                    Log.i("fl",login.toString());
+                    Log.i("fl2",login.toString() + "   " + login.result);
                 }else{
                     throw new IOException("Unexpected code " + response);
                 }
@@ -164,9 +165,11 @@ public class MainActivity extends Activity {
                 if(login.result == 0){
 
                     String uJson = "{user_id:"+login.data.getUserId()+"}";
+                    RequestBody body = new FormEncodingBuilder().add("user_id", login.data.getUserId()+"").build();
+
 
                     try{
-                        NetUtils.postJson("http://120.25.164.238:80/AndroidApp/login", uJson, app, new Callback() {
+                        NetUtils.postJson("http://115.156.245.150:8080/AndroidApp/getUserInfo", body, app, new Callback() {
                             @Override
                             public void onFailure(Request request, IOException e) {
 
@@ -177,17 +180,13 @@ public class MainActivity extends Activity {
                             @Override
                             public void onResponse(Response response) throws IOException {
                                 String userInfoJson = response.body().toString();
-                                UserInfo userInfo = gson.fromJson(userInfoJson, UserInfo.class);
+                                UserInfo userInfo = gson.fromJson(response.body().charStream(), UserInfo.class);
                                 //绑定数据并跳转
                                 Intent intent = new Intent(MainActivity.this, login.class);
                                 intent.putExtra("userInfo", userInfo);
                                 startActivity(intent);
                             }
                         });
-
-
-
-
 
                     }catch (IOException e){
                         Toast.makeText(MainActivity.this, "用户名或密码错误， 请重新登录", Toast.LENGTH_LONG).show();
@@ -211,9 +210,11 @@ public class MainActivity extends Activity {
 
 
         Log.i("fl", gson.toJson(u));
+        RequestBody body = new FormEncodingBuilder().add("user_name", u.getUser_name()).add("user_password", u.getUser_password()).build();
+
 
         try{
-            NetUtils.postJson("http://120.25.164.238:80/AndroidApp/login",gson.toJson(u), this.getApplication(), callback);
+            NetUtils.postJson("http://115.156.245.150:8080/AndroidApp/login",body, this.getApplication(), callback);
 
         }catch(IOException e){
             //登录失败处理

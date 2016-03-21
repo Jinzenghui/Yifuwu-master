@@ -29,7 +29,7 @@ public class login extends Activity {
             @Override
             public void run() {
                 try{
-                    Thread.sleep(3000);
+                    Thread.sleep(2000);
                     startActivity(intent);
                     finish();
                 }catch(InterruptedException e){
