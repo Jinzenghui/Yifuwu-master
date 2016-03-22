@@ -3,6 +3,7 @@ package com.example.biac.yifuwu;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -11,24 +12,39 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.location.Poi;
+import com.google.gson.Gson;
 import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
 import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 
+import Pojo.OrdersOverviewInfo;
+import Pojo.UserInfo;
 import Utils.Common;
 import Utils.NetUtils;
 
 public class UserHome extends Activity {
+
+    private UserInfo userInfo;
+
+    public int new_orders;
+    public int completed_orders;
+    public int processing_orders;
+
+    private int userId;
+    private String workStation;
 
     private View workOrderBtn;
     private Button netsearchBtn, signalBtn, settingsBtn;
@@ -47,6 +63,7 @@ public class UserHome extends Activity {
     public Application app;
 
     private static final int WEATHERINFORMATION = 1;
+    private static final int ORDERSOVERVIEW = 2;
 
     private Handler handler = new Handler(){
 
@@ -60,11 +77,47 @@ public class UserHome extends Activity {
 
     };
 
+    private Handler handlerOverviewOrders = new Handler(){
+
+        @Override
+        public void handleMessage(Message msg){
+
+            OrdersOverviewInfo overviewInfo = (OrdersOverviewInfo)msg.obj;
+
+            new_orders = overviewInfo.getData().getNew_work_orders();
+            completed_orders = overviewInfo.getData().getCompleted_work_orders();
+            processing_orders = overviewInfo.getData().getProcessing_work_orders();
+
+            if(overviewInfo.getData().getProcessing_work_orders() > 0){
+                badgeView.setBadgeBackgroundColor(Color.GREEN);
+                badgeView.setText(overviewInfo.getData().getProcessing_work_orders() + "");
+                badgeView.show();
+            }else if(overviewInfo.getData().getNew_work_orders() > 0){
+                badgeView.setBadgeBackgroundColor(Color.RED);
+                badgeView.setText(overviewInfo.getData().getNew_work_orders() + "");
+                badgeView.show();
+            }
+
+        }
+
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_user_home);
+
+        userInfo = (UserInfo)getIntent().getParcelableExtra("userInfo");
+
+        userId = userInfo.getData().getUser_id();
+        workStation = userInfo.getData().getWork_station();
+
+        getOrdersOverviewInfo(userId, workStation, "url");
+
+        Log.i("Jin_new", new_orders + "");
+        Log.i("Jin_completed", completed_orders + "");
+        Log.i("Jin_processing", processing_orders + "");
 
         initView();
 
@@ -76,7 +129,6 @@ public class UserHome extends Activity {
                 startActivity(intent);
             }
         });
-
 
         //点击网络查询按钮，触发的事件
         netsearchBtn.setOnClickListener(new View.OnClickListener() {
@@ -151,7 +203,10 @@ public class UserHome extends Activity {
 
         badgeView = new BadgeView(this, workOrderBtn);
 
-        setBadgeView();
+        badgeView.setTextSize(12);
+        badgeView.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
+
+//        setBadgeView();
         setNameText();
         setJobText();
         setGiftText();
@@ -165,49 +220,50 @@ public class UserHome extends Activity {
 
     //显示姓名
     public void setNameText(){
-        nameText.setText("名称：宋文山");
+        nameText.setText("名称：" + userInfo.getData().getUser_id());
     }
 
     //显示工作
     public void setJobText(){
-        jobText.setText("工位：宜昌现场岗");
+        jobText.setText("工位：" + userInfo.getData().getWork_station());
     }
 
     //显示积分
     public void setGiftText()
     {
-        giftText.setText("积分：710");
+        giftText.setText("积分：" + userInfo.getData().getPoints());
     }
 
     //显示排名
     public void setRankingText(){
-        rankingText.setText("排名：15");
+        rankingText.setText("排名：" + userInfo.getData().getUser_rank());
     }
 
     //显示累计处理工单
     public void setDoneWorkNumbersText(){
-        doneWorkNumbersText.setText("累计处理工单：37");
+        doneWorkNumbersText.setText("累计处理工单：" + userInfo.getData().getTotal_work_orders());
     }
 
     //显示累计登录天数
     public void setDaysOfLoginText(){
-        daysOfLoginText.setText("累计登录天数：51");
+        daysOfLoginText.setText("累计登录天数：" + userInfo.getData().getTotal_login_days());
     }
 
     //显示上次登录时间
     public void setDateOflastLoginText(){
-        dateOflastLoginText.setText("上次登录日期：2016-3-6");
+        dateOflastLoginText.setText("上次登录日期："+ userInfo.getData().getLast_login_time());
     }
 
     //设置工单作业按钮上的圆圈
-    public void setBadgeView(){
-
-        badgeView.setTextSize(12);                                  //设置大小
-        badgeView.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
-        badgeView.setText("10");                                    //设置未处理工单的数目
-        badgeView.show();
-
-    }
+//    public void setBadgeView(){
+//
+//        badgeView.setTextSize(12);                                  //设置大小
+//        badgeView.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
+//        badgeView.setBadgeBackgroundColor(Color.BLUE);
+////        badgeView.setText("10");                                    //设置未处理工单的数目
+//        badgeView.show();
+//
+//    }
 
     //设置公告牌的内容
     public void setBillBordText(String billBordText){
@@ -358,4 +414,52 @@ public class UserHome extends Activity {
         option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤gps仿真结果，默认需要
         mLocationClient.setLocOption(option);
     }
+
+    public void getOrdersOverviewInfo(int user_id, String work_station, String url)
+    {
+
+        final Gson gson = new Gson();
+
+        Callback callback = new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+
+                OrdersOverviewInfo overviewInfo;
+
+                if(response.isSuccessful()){
+
+                    overviewInfo = gson.fromJson(response.body().charStream(), OrdersOverviewInfo.class);
+
+                    Message message = Message.obtain();
+                    message.obj = overviewInfo;
+                    message.what = ORDERSOVERVIEW;
+                    handlerOverviewOrders.sendMessage(message);
+
+                    Log.i("Jin123", " " + overviewInfo.getData().getCompleted_work_orders());
+
+                }else{
+                    throw new IOException("Unexpected code " + response);
+                }
+            }
+        };
+
+        RequestBody body = new FormEncodingBuilder().add("user_id", user_id + "").add("work_station", work_station + "").build();
+
+        try{
+
+            NetUtils.postJson("http://115.156.245.150:8080/AndroidApp/getOrdersOverviewInfo", body, this.getApplication(), callback);
+
+        }catch(IOException e){
+
+            Toast.makeText(UserHome.this, "获取工单概述失败", Toast.LENGTH_LONG).show();
+
+        }
+
+    }
+
 }
