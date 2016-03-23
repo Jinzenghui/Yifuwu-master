@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -13,12 +14,16 @@ import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import Pojo.NewOrderDetailInfo;
+
 public class OrderDetail extends Activity {
 
     private TextView orderNumberTextView, orderGradeTextView, beginTimeTextView, typeTextView, areaTextView, usertelephonenumberTextView, symptomTextView, complaintstimeTextView, complaintsaddressTextView;
     private TextView guestbookTextView, preprocessingTextView;
 
     private Button acceptBtn, giveupBtn;
+
+    private NewOrderDetailInfo newOrderDetailInfo;
 
     int minute = 48;
     int second = 0;
@@ -156,6 +161,21 @@ public class OrderDetail extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_order_detail);
 
+        newOrderDetailInfo = (NewOrderDetailInfo)getIntent().getParcelableExtra("NewOrderDetailInfo");
+
+        Log.i("Jin123456", newOrderDetailInfo.getData().getWork_order_id());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getWork_order_level());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getCreate_time());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getRemaining_time());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getWork_order_type_code());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getComplaint_tele_num());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getComplaint_time());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getComplaint_position());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getMessage());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getGps_lon());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getGps_lat());
+        Log.i("Jin123456", newOrderDetailInfo.getData().getPre_deal_result());
+
         initView();
 
         acceptBtn.setOnClickListener(new View.OnClickListener() {
@@ -171,7 +191,6 @@ public class OrderDetail extends Activity {
                 finish();
             }
         });
-
 
     }
 
@@ -212,12 +231,12 @@ public class OrderDetail extends Activity {
 
     //显示工单编号
     public void setOrderNumberTextView(){
-        orderNumberTextView.setText("工单编号   16030854321");
+        orderNumberTextView.setText("工单编号   " + newOrderDetailInfo.getData().getWork_order_id());
     }
 
     //显示工单等级
     public void setOrderGradeTextView(){
-        orderGradeTextView.setText("工单等级    一般");
+        orderGradeTextView.setText("工单等级    " + newOrderDetailInfo.getData().getWork_order_level());
     }
 
     //显示剩余时间
@@ -239,27 +258,27 @@ public class OrderDetail extends Activity {
 
     //显示发起时间
     public void setBeginTimeTextView(){
-        beginTimeTextView.setText("发起时间   2016/3/8 12:28");
+        beginTimeTextView.setText("发起时间   " + newOrderDetailInfo.getData().getCreate_time());
     }
 
     //显示投诉类型
     public void setTypeTextView(){
-        typeTextView.setText("类        型   2G语音投诉");
+        typeTextView.setText("类        型   " + newOrderDetailInfo.getData().getWork_order_type_code() );
     }
 
     //显示地区
     public void setAreaTextView(){
-        areaTextView.setText("地        区   宜昌市兴山县");
+        areaTextView.setText("地        区   " + newOrderDetailInfo.getData().getComplaint_position());
     }
 
     //显示用户号码
     public void setUsertelephonenumberTextView(){
-        usertelephonenumberTextView.setText("用户号码    18907182187");
+        usertelephonenumberTextView.setText("用户号码    " + newOrderDetailInfo.getData().getComplaint_tele_num());
     }
 
     //显示故障现象
     public void setSymptomTextView(){
-        symptomTextView.setText("故障现象    2G语音主叫失败");
+        symptomTextView.setText("故障现象    " + newOrderDetailInfo.getData().getWork_order_type_code());
     }
 
     //显示投诉时间
