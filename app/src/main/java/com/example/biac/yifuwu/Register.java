@@ -1,6 +1,8 @@
 package com.example.biac.yifuwu;
 
 import android.app.AlertDialog;
+import android.app.Application;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -14,6 +16,19 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+
+import java.io.IOException;
+
+import Pojo.RegisterCallbackInfo;
+import Pojo.UserInfo;
+import Utils.NetUtils;
 
 public class Register extends AppCompatActivity {
 
@@ -34,10 +49,6 @@ public class Register extends AppCompatActivity {
 
         initView();
         listenInputType();
-
-//        Log.i("password", password);
-//        Log.i("Jin-Confirm-password", confirm_pwd);
-
 
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,7 +155,6 @@ public class Register extends AppCompatActivity {
                         Toast.makeText(Register.this, "密码只能输入8为数字或者字母组合，不能含有特殊符号",Toast.LENGTH_LONG).show();
                     }
 
-
                 }catch(Exception e){
                     e.printStackTrace();
                 }
@@ -167,7 +177,6 @@ public class Register extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
 
                 try{
-
                     String temp = s.toString();
                     String tem = temp.substring(temp.length() - 1, temp.length());
                     char[] temC = tem.toCharArray();
@@ -183,14 +192,11 @@ public class Register extends AppCompatActivity {
                         s.delete(temp.length()-1, temp.length());
                         Toast.makeText(Register.this, "密码只能输入8为数字或者字母组合，不能含有特殊符号", Toast.LENGTH_LONG).show();
                     }
-
                 }catch(Exception e){
                     e.printStackTrace();
                 }
-
             }
         });
-
 
     }
 
@@ -206,21 +212,94 @@ public class Register extends AppCompatActivity {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
 
-                if(checkedId == male_radioButton.getId()){
+                if (checkedId == male_radioButton.getId()) {
 
                     sex = male_radioButton.getText().toString();
 
-                }else if(checkedId == female_radioButton.getId()){
+                } else if (checkedId == female_radioButton.getId()) {
 
                     sex = female_radioButton.getText().toString();
 
-                }else{
+                } else {
                     sex = "";
                 }
 
             }
         });
-
     }
 
+    //发送给后台用户的注册信息
+    //传入参数：用户名：user_name; 用户密码：user_password; 负责工位：work_station; 手机号码：contact; 用户性别: user_gender;
+
+
+    public void setRegisterInfo(final String user_name, final String user_password, String work_station, String contact, String user_gender){
+
+        final Gson gson = new Gson();
+
+        final Application app = this.getApplication();
+
+        Callback callback = new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+
+                RegisterCallbackInfo registerCallbackInfo;
+
+                if(response.isSuccessful()){
+
+                    registerCallbackInfo = gson.fromJson(response.body().charStream(), RegisterCallbackInfo.class);
+
+                }else{
+
+                    throw new IOException("Unexpected code " + response);
+
+                }
+
+                if(registerCallbackInfo.getResult() == 0){
+
+                    Toast.makeText(Register.this, registerCallbackInfo.getText() + "，正在登录....", Toast.LENGTH_LONG).show();
+
+                    RequestBody bodyLogin = new FormEncodingBuilder().add("user_name", user_name).add("user_password", user_password).build();
+
+                    try{
+
+                        NetUtils.postJson("http://120.27.106.26/app/login", bodyLogin, app, new Callback() {
+                            @Override
+                            public void onFailure(Request request, IOException e) {
+
+                            }
+
+                            @Override
+                            public void onResponse(Response response) throws IOException {
+
+                                UserInfo userInfo = gson.fromJson(response.body().charStream(), UserInfo.class);
+
+                                Intent intent = new Intent(Register.this, login.class);
+                                intent.putExtra("userInfo", userInfo);
+                                startActivity(intent);
+                            }
+                        });
+
+                    }catch(IOException e){
+
+                    }
+
+                }
+            }
+        };
+
+        RequestBody body = new FormEncodingBuilder().add("user_name", user_name).add("user_password", user_password).add("work_station", work_station).add("contact", contact).add("user_gender", user_gender).build();
+
+        try{
+
+            NetUtils.postJson("http:120.27.106.26/app/register", body, this.getApplication(), callback);
+
+        }catch(IOException e){
+
+        }
+    }
 }
