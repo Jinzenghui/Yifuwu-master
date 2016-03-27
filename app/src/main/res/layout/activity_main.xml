@@ -86,7 +86,6 @@
             android:password="true"
             />
 
-
     </LinearLayout>
 
 
@@ -97,7 +96,7 @@
         android:layout_below="@id/pwdInput"
         android:layout_alignLeft="@id/pwdInput"
         android:text="记住密码"
-        android:textColor="@color/colorBlack"
+        android:textColor="@color/colorPeacockBlue"
         />
 
     <CheckBox
@@ -108,20 +107,32 @@
         android:layout_toRightOf="@id/rememberPassword"
         android:layout_marginLeft="40dp"
         android:text="自动登录"
-        android:textColor="@color/colorBlack"
+        android:textColor="@color/colorPeacockBlue"
         />
 
-    <Button
-        android:id="@+id/LoginButton"
-        android:layout_width="match_parent"
-        android:layout_height="40dip"
-        android:layout_below="@id/rememberPassword"
-        android:layout_alignLeft="@id/nameInput"
-        android:layout_alignRight="@id/nameInput"
-        android:layout_marginTop="20dip"
-        android:background="@drawable/enter"
-        android:text="登录"
-        android:textColor="@android:color/white"
+        <Button
+            android:id="@+id/registerButton"
+            android:layout_width="wrap_content"
+            android:layout_height="40dip"
+            android:layout_marginTop="20dip"
+            android:background="@drawable/enter"
+            android:layout_below="@id/rememberPassword"
+            android:layout_alignLeft="@id/nameInput"
+            android:text="注册"
+            android:textColor="@android:color/white"
         />
+
+        <Button
+            android:id="@+id/LoginButton"
+            android:layout_width="wrap_content"
+            android:layout_height="40dip"
+            android:layout_marginTop="20dip"
+            android:background="@drawable/enter"
+            android:layout_below="@id/rememberPassword"
+            android:layout_alignRight="@id/nameInput"
+            android:text="登录"
+            android:textColor="@android:color/white"
+            />
+
 
 </RelativeLayout>

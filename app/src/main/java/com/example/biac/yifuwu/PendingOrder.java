@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,13 +16,33 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import Pojo.NewOdersOverviewInfo;
+import Pojo.NewOrderDetailInfo;
+import Utils.NetUtils;
+
 public class PendingOrder extends Activity {
+
+    private static final int NEWORDERSOVERVIEWINFO = 1;
+
+    private String work_order_status;
+
+    private NewOdersOverviewInfo newOrdersOverviewInfo;
+    private String work_order_id;
 
     private List<Map<String, String>> mData;
 
@@ -47,54 +69,41 @@ public class PendingOrder extends Activity {
 
     }
 
-    private List<Map<String, String>>getDate(){
+    private List<Map<String, String>>getDate(NewOdersOverviewInfo newOrdersOverviewInfo ){
 
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
 
         Map<String, String> map = new HashMap<String, String>();
-        map.put("number", "编号：201603084332");
-        map.put("time", "时间：2016-3-8 14:21");
-        map.put("type", "类型：4G数据投诉");
-        map.put("address", "地区：宜昌-长阳县");
-        list.add(map);
 
-        map = new HashMap<String, String>();
-        map.put("number", "编号：201603084332");
-        map.put("time", "时间：2016-3-8 10:01");
-        map.put("type", "类型：3G数据投诉");
-        map.put("address", "地区：宜昌-秭归县");
-        list.add(map);
+        for(int i=0; i < newOrdersOverviewInfo.getSum(); i++){
 
-        map = new HashMap<String, String>();
-        map.put("number", "编号：201603084332");
-        map.put("time", "时间：2016-3-7 21:51");
-        map.put("type", "类型：2G语音投诉");
-        map.put("address", "地区：宜昌-城区");
-        list.add(map);
+            map.put("number", "编号：" + newOrdersOverviewInfo.getData().get(i).getWork_order_id());
 
-        map = new HashMap<String, String>();
-        map.put("number", "编号：201603084332");
-        map.put("time", "时间：2016-3-8 14:21");
-        map.put("type", "类型：4G数据投诉");
-        map.put("address", "地区：宜昌-长阳县");
-        list.add(map);
+            map.put("time", "时间：" + newOrdersOverviewInfo.getData().get(i).getCreate_time());
 
-        map = new HashMap<String, String>();
-        map.put("number", "编号：201603084332");
-        map.put("time", "时间：2016-3-8 14:21");
-        map.put("type", "类型：4G数据投诉");
-        map.put("address", "地区：宜昌-长阳县");
-        list.add(map);
+            map.put("type", "类型：" + newOrdersOverviewInfo.getData().get(i).getWork_order_type());
 
-        map = new HashMap<String, String>();
-        map.put("number", "编号：201603084332");
-        map.put("time", "时间：2016-3-8 14:21");
-        map.put("type", "类型：4G数据投诉");
-        map.put("address", "地区：宜昌-长阳县");
-        list.add(map);
+            map.put("address", "地区：" + newOrdersOverviewInfo.getData().get(i).getArea());
+
+            list.add(map);
+
+        }
 
         return list;
     }
+
+    private Handler handler = new Handler(){
+
+        @Override
+        public void handleMessage(android.os.Message msg){
+
+            newOrdersOverviewInfo = (NewOdersOverviewInfo) msg.obj;
+
+            mData = getDate(newOrdersOverviewInfo);
+        }
+    };
+
+
 
 
     @Override
@@ -103,7 +112,13 @@ public class PendingOrder extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_pending_order);
 
-        mData = getDate();
+        newOrdersOverviewInfo = (NewOdersOverviewInfo)getIntent().getParcelableExtra("FirstPageNewOrderOverviewInfo");
+
+        totalnumber = (int)getIntent().getIntExtra("New_Orders_Number", 0);
+
+        work_order_status = (String)getIntent().getStringExtra("Work_order_status");
+
+        mData = getDate(newOrdersOverviewInfo);
 
         initView();
         ma = new MyAdapter(this);
@@ -137,12 +152,15 @@ public class PendingOrder extends Activity {
         checkButton();
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Intent intent = new Intent(PendingOrder.this, OrderDetail.class);
+                work_order_id = newOrdersOverviewInfo.getData().get(position).getWork_order_id();
 
-                startActivity(intent);
+                Log.i("Jin12345", work_order_id);
+
+                getNewOrderDetailInfo(work_order_status, work_order_id);
 
                 Log.i("test", "this is a test!" + position + index);
 
@@ -171,6 +189,8 @@ public class PendingOrder extends Activity {
 
         index--;
 
+        getNewOrdersOverviewInfo(work_order_status,index);
+
         ma.notifyDataSetChanged();
 
         checkButton();
@@ -182,6 +202,8 @@ public class PendingOrder extends Activity {
 
         index++;
 
+        getNewOrdersOverviewInfo(work_order_status, index);
+
         ma.notifyDataSetChanged();
 
         checkButton();
@@ -192,8 +214,7 @@ public class PendingOrder extends Activity {
 
     public void checkButton(){
 
-
-        int totalnumber = getTotalnumber();
+//        int totalnumber = getTotalnumber();
 
         double pagenumber = Math.ceil((double)totalnumber / VIEW_COUNT);
 
@@ -218,11 +239,10 @@ public class PendingOrder extends Activity {
 
     }
 
-
     //显示总的工单数目
     public void setTotalnumber(){
 
-        int totalnumber = getTotalnumber();
+//        int totalnumber = getTotalnumber();
 
         tv1.setText("总数：" + totalnumber);
     }
@@ -230,7 +250,7 @@ public class PendingOrder extends Activity {
     //显示页数
     public void setPagenumber(){
 
-        int totalnumber = getTotalnumber();
+//        int totalnumber = getTotalnumber();
 
         double pagenumber = Math.ceil((double) totalnumber / VIEW_COUNT);
 
@@ -240,11 +260,11 @@ public class PendingOrder extends Activity {
     }
 
     //获得工单的总数
-    public int getTotalnumber(){
-
-        return mData.size();
-
-    }
+//    public int getTotalnumber(){
+//
+//        return mData.size();
+//
+//    }
 
     //获得页数的索引
     public int getPageIndex(){
@@ -267,13 +287,15 @@ public class PendingOrder extends Activity {
         @Override
         public int getCount() {
 
-            int ori = VIEW_COUNT * index;
+//            int ori = VIEW_COUNT * index;
+//
+//            if(mData.size() - ori < VIEW_COUNT){
+//                return mData.size() - ori;
+//            }else{
+//                return VIEW_COUNT;
+//            }
 
-            if(mData.size() - ori < VIEW_COUNT){
-                return mData.size() - ori;
-            }else{
-                return VIEW_COUNT;
-            }
+            return mData.size();
 
         }
 
@@ -306,13 +328,125 @@ public class PendingOrder extends Activity {
                 holder = (ViewHolder)convertView.getTag();
             }
 
-            holder.number.setText((String)mData.get(position + index*VIEW_COUNT).get("number"));
-            holder.time.setText((String)mData.get(position + index*VIEW_COUNT).get("time"));
-            holder.type.setText((String) mData.get(position + index * VIEW_COUNT).get("type"));
-            holder.address.setText((String)mData.get(position + index*VIEW_COUNT).get("address"));
+            holder.number.setText((String)mData.get(position).get("number"));
+            holder.time.setText((String)mData.get(position).get("time"));
+            holder.type.setText((String) mData.get(position).get("type"));
+            holder.address.setText((String)mData.get(position).get("address"));
 
             return convertView;
         }
     }
+
+    public void getNewOrderDetailInfo(final String work_order_status, String work_order_id)
+    {
+        final Gson gson = new Gson();
+
+        Callback callback = new Callback(){
+
+            @Override
+            public void onFailure(Request request, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+
+                NewOrderDetailInfo newOrderDetailInfo;
+
+                if(response.isSuccessful()){
+
+                    newOrderDetailInfo = gson.fromJson(response.body().charStream(), NewOrderDetailInfo.class);
+
+                    if(work_order_status == 1 + "") {
+
+                        Intent intent = new Intent(PendingOrder.this, OrderDetail.class);
+                        intent.putExtra("NewOrderDetailInfo", newOrderDetailInfo);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+
+                    }else if(work_order_status == (2 + "")){
+                        Intent intent = new Intent(PendingOrder.this, PreprocessingOrderDetail.class);
+                        intent.putExtra("NewOrderDetailInfo", newOrderDetailInfo);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+
+                    }else if(work_order_status == (3 + "")){
+
+                        Intent intent = new Intent(PendingOrder.this, CompletedOrderDetail.class);
+                        intent.putExtra("NewOrderDetailInfo", newOrderDetailInfo);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+
+                    }
+
+                }else{
+                    throw new IOException("Unexpected code " + response);
+                }
+            }
+        };
+
+        RequestBody body = new FormEncodingBuilder().add("work_order_id", work_order_id).build();
+
+        try{
+
+            NetUtils.postJson("http://120.27.106.26/app/getNewOrdersDetailsInfo", body, this.getApplication(), callback);
+
+        }catch(IOException e){
+
+            Toast.makeText(PendingOrder.this, "获取工单概述失败", Toast.LENGTH_LONG).show();
+
+        }
+
+    }
+
+    public void getNewOrdersOverviewInfo(String work_order_status  ,int pagenumber )
+    {
+        final Gson gson = new Gson();
+
+        Callback callback = new Callback(){
+
+            @Override
+            public void onFailure(Request request, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+
+                NewOdersOverviewInfo newOdersOverviewInfo;
+
+                if(response.isSuccessful()){
+
+                    newOdersOverviewInfo = gson.fromJson(response.body().charStream(), NewOdersOverviewInfo.class);
+
+                    Message message = Message.obtain();
+                    message.obj = newOdersOverviewInfo;
+                    message.what = NEWORDERSOVERVIEWINFO;
+                    handler.sendMessage(message);
+
+
+                }else{
+                    throw new IOException("Unexpected code " + response);
+                }
+            }
+        };
+
+        RequestBody body = new FormEncodingBuilder().add("work_order_status", work_order_status).add("page", pagenumber + "").add("num", 3 + "").build();
+
+        try{
+
+            NetUtils.postJson("http://120.27.106.26/app/getNewOrdersOverviewInfo", body, this.getApplication(), callback);
+
+        }catch(IOException e){
+
+            Toast.makeText(PendingOrder.this, "无新工单", Toast.LENGTH_LONG).show();
+
+        }
+
+    }
+
+
+
+
 
 }

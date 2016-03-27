@@ -12,18 +12,14 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.location.Poi;
-import com.google.gson.Gson;
 import com.squareup.okhttp.Callback;
-import com.squareup.okhttp.FormEncodingBuilder;
 import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 
 import java.io.BufferedReader;
@@ -77,30 +73,30 @@ public class UserHome extends Activity {
 
     };
 
-    private Handler handlerOverviewOrders = new Handler(){
-
-        @Override
-        public void handleMessage(Message msg){
-
-            OrdersOverviewInfo overviewInfo = (OrdersOverviewInfo)msg.obj;
-
-            new_orders = overviewInfo.getData().getNew_work_orders();
-            completed_orders = overviewInfo.getData().getCompleted_work_orders();
-            processing_orders = overviewInfo.getData().getProcessing_work_orders();
-
-            if(overviewInfo.getData().getProcessing_work_orders() > 0){
-                badgeView.setBadgeBackgroundColor(Color.GREEN);
-                badgeView.setText(overviewInfo.getData().getProcessing_work_orders() + "");
-                badgeView.show();
-            }else if(overviewInfo.getData().getNew_work_orders() > 0){
-                badgeView.setBadgeBackgroundColor(Color.RED);
-                badgeView.setText(overviewInfo.getData().getNew_work_orders() + "");
-                badgeView.show();
-            }
-
-        }
-
-    };
+//    private Handler handlerOverviewOrders = new Handler(){
+//
+//        @Override
+//        public void handleMessage(Message msg){
+//
+//            OrdersOverviewInfo overviewInfo = (OrdersOverviewInfo)msg.obj;
+//
+//            new_orders = overviewInfo.getData().getNew_work_orders();
+//            completed_orders = overviewInfo.getData().getCompleted_work_orders();
+//            processing_orders = overviewInfo.getData().getProcessing_work_orders();
+//
+//            if(overviewInfo.getData().getProcessing_work_orders() > 0){
+//                badgeView.setBadgeBackgroundColor(Color.GREEN);
+//                badgeView.setText(overviewInfo.getData().getProcessing_work_orders() + "");
+//                badgeView.show();
+//            }else if(overviewInfo.getData().getNew_work_orders() > 0){
+//                badgeView.setBadgeBackgroundColor(Color.RED);
+//                badgeView.setText(overviewInfo.getData().getNew_work_orders() + "");
+//                badgeView.show();
+//            }
+//
+//        }
+//
+//    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,24 +104,35 @@ public class UserHome extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_user_home);
 
-        userInfo = (UserInfo)getIntent().getParcelableExtra("userInfo");
+        final OrdersOverviewInfo overviewInfo = (OrdersOverviewInfo)getIntent().getParcelableExtra("OrdersOverviewInfo");
+        new_orders = overviewInfo.getData().getNew_work_orders();
+        completed_orders = overviewInfo.getData().getCompleted_work_orders();
+        processing_orders = overviewInfo.getData().getProcessing_work_orders();
+
+        userInfo = (UserInfo)getIntent().getParcelableExtra("UserInfo");
 
         userId = userInfo.getData().getUser_id();
         workStation = userInfo.getData().getWork_station();
 
-        getOrdersOverviewInfo(userId, workStation, "url");
-
-        Log.i("Jin_new", new_orders + "");
-        Log.i("Jin_completed", completed_orders + "");
-        Log.i("Jin_processing", processing_orders + "");
-
         initView();
+
+        if(overviewInfo.getData().getProcessing_work_orders() > 0){
+            badgeView.setBadgeBackgroundColor(Color.GREEN);
+            badgeView.setText(overviewInfo.getData().getProcessing_work_orders() + "");
+            badgeView.show();
+        }else if(overviewInfo.getData().getNew_work_orders() > 0){
+            badgeView.setBadgeBackgroundColor(Color.RED);
+            badgeView.setText(overviewInfo.getData().getNew_work_orders() + "");
+            badgeView.show();
+        }
 
         //点击工单作业按钮，触发事件，查看工单列表
         workOrderBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(UserHome.this, WorkOrder.class);
+                intent.putExtra("UserId", userId);
+                intent.putExtra("OrdersOverviewInfo", overviewInfo);
                 startActivity(intent);
             }
         });
@@ -178,8 +185,7 @@ public class UserHome extends Activity {
 
         if(mLocationClient.isStarted())
             mLocationClient.requestLocation();
-//
-//
+
     }
 
 
@@ -203,10 +209,9 @@ public class UserHome extends Activity {
 
         badgeView = new BadgeView(this, workOrderBtn);
 
-        badgeView.setTextSize(12);
+        badgeView.setTextSize(14);
         badgeView.setBadgePosition(BadgeView.POSITION_TOP_RIGHT);
 
-//        setBadgeView();
         setNameText();
         setJobText();
         setGiftText();
@@ -214,7 +219,6 @@ public class UserHome extends Activity {
         setDoneWorkNumbersText();
         setDaysOfLoginText();
         setDateOflastLoginText();
-        //setBillBordText(weatherInformation);
 
     }
 
@@ -415,51 +419,6 @@ public class UserHome extends Activity {
         mLocationClient.setLocOption(option);
     }
 
-    public void getOrdersOverviewInfo(int user_id, String work_station, String url)
-    {
 
-        final Gson gson = new Gson();
-
-        Callback callback = new Callback() {
-            @Override
-            public void onFailure(Request request, IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(Response response) throws IOException {
-
-                OrdersOverviewInfo overviewInfo;
-
-                if(response.isSuccessful()){
-
-                    overviewInfo = gson.fromJson(response.body().charStream(), OrdersOverviewInfo.class);
-
-                    Message message = Message.obtain();
-                    message.obj = overviewInfo;
-                    message.what = ORDERSOVERVIEW;
-                    handlerOverviewOrders.sendMessage(message);
-
-                    Log.i("Jin123", " " + overviewInfo.getData().getCompleted_work_orders());
-
-                }else{
-                    throw new IOException("Unexpected code " + response);
-                }
-            }
-        };
-
-        RequestBody body = new FormEncodingBuilder().add("user_id", user_id + "").add("work_station", work_station + "").build();
-
-        try{
-
-            NetUtils.postJson("http://115.156.245.150:8080/AndroidApp/getOrdersOverviewInfo", body, this.getApplication(), callback);
-
-        }catch(IOException e){
-
-            Toast.makeText(UserHome.this, "获取工单概述失败", Toast.LENGTH_LONG).show();
-
-        }
-
-    }
 
 }

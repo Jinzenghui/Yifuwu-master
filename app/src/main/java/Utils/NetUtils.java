@@ -20,21 +20,28 @@ public class NetUtils {
 
     public static void postJson(String url, RequestBody body, Application app, Callback callback) throws IOException {
         OkHttpClient client = ((MyApplication)app).getClient();
-//        RequestBody body = RequestBody.create(JSON, json);
-
 
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
                 .build();
         client.newCall(request).enqueue(callback);
-//        if(response.isSuccessful()){
-//            return response.body().string();
-//        }else{
-//            throw new IOException("Unexpected code " + response);
-//        }
 
     }
+
+    public static void getJson(String url, Application app, Callback callback) throws IOException{
+
+        OkHttpClient client = ((MyApplication)app).getClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        client.newCall(request).enqueue(callback);
+
+    }
+
+
 
     public static void getWeather(String url,Application app, Callback callback){
         OkHttpClient client = ((MyApplication)app).getClient();

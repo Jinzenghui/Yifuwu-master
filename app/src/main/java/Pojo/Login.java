@@ -9,14 +9,14 @@ public class Login {
     public String text;
     public Data data;
     public class Data{
-        int userId;
+        int user_id;
 
         public int getUserId() {
-            return userId;
+            return user_id;
         }
 
         public void setUserId(int userId) {
-            this.userId = userId;
+            this.user_id = userId;
         }
     }
 
@@ -28,8 +28,9 @@ public class Login {
 
     @Override
     public String toString(){
-        if(data!=null)
-        return result+text+data.userId;
+        if(data!=null) {
+            return result + text + data.user_id;
+        }
         return result+text;
     }
 

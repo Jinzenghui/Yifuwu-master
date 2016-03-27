@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
@@ -28,14 +27,13 @@ import com.squareup.okhttp.Response;
 
 import java.io.IOException;
 
-import Pojo.Login;
 import Pojo.UserInfo;
 import Pojo.UserLogin;
 import Utils.NetUtils;
 
 public class MainActivity extends Activity {
 
-    private Button logInBtn;
+    private Button logInBtn, registerBtn;
     private AutoCompleteTextView userName;
     private EditText password;
     private CheckBox remember_pwd, auto_login;
@@ -92,11 +90,18 @@ public class MainActivity extends Activity {
                 auto_login.setChecked(true);
 
                 //登录流程
-               userLogin(name, password, "localhost:8080/AndroidApp/login", "userurl");
+               userLogin(name, password);
 
             }
         }
 
+        registerBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, Register.class);
+                startActivity(intent);
+            }
+        });
 
         logInBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,14 +111,15 @@ public class MainActivity extends Activity {
                 userNameValue = userName.getText().toString();
                 passwordValue = password.getText().toString();
 
-                if (remember_pwd.isChecked()) {
-                    SharedPreferences.Editor editor = sp.edit();
-                    editor.putString("USER_NAME", userNameValue);
-                    editor.putString("PASSWORD", passwordValue);
-                    editor.commit();
-                }
+//                if (remember_pwd.isChecked()) {
+//                    SharedPreferences.Editor editor = sp.edit();
+//                    editor.putString("USER_NAME", userNameValue);
+//                    editor.putString("PASSWORD", passwordValue);
+//                    editor.commit();
+//                }
 
-                userLogin(userNameValue, passwordValue, "http://115.156.245.150:8080/AndroidApp/login", "userurl");
+                userLogin(userNameValue, passwordValue);
+
 
             }
         });
@@ -151,14 +157,14 @@ public class MainActivity extends Activity {
         auto_login = (CheckBox)findViewById(R.id.autoLogin);
 
         logInBtn = (Button) findViewById(R.id.LoginButton);
+        registerBtn = (Button)findViewById(R.id.registerButton);
 
     }
-
 
     /*
     用户登录
      */
-    public void userLogin(String name, final String password, String loginUrl, String userUrl){
+    public void userLogin(String name, final String password){
          /*
                 登录流程
                  */
@@ -173,83 +179,33 @@ public class MainActivity extends Activity {
         Callback callback = new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
+
                 Toast.makeText(MainActivity.this, "用户名或密码错误， 请重新登录", Toast.LENGTH_LONG).show();
 
             }
 
-
-
             @Override
             public void onResponse(Response response) throws IOException {
 
-                String result;
-                Login login;
-                if(response.isSuccessful()){
-
-//                    Log.i("fl", response.body().charStream().toString());
-                    login =  gson.fromJson(response.body().charStream(), Login.class);
-                    Log.i("fl2",login.toString() + "   " + login.result);
-                }else{
-                    throw new IOException("Unexpected code " + response);
+                if (remember_pwd.isChecked()) {
+                    SharedPreferences.Editor editor = sp.edit();
+                    editor.putString("USER_NAME", userNameValue);
+                    editor.putString("PASSWORD", passwordValue);
+                    editor.commit();
                 }
 
-                //判断result，成功数据绑定跳转或失败显示原因
+                UserInfo userInfo = gson.fromJson(response.body().charStream(), UserInfo.class);
 
-                //如果登录成功则获取用户信息
-                if(login.result == 0){
-
-                    String uJson = "{user_id:"+login.data.getUserId()+"}";
-                    RequestBody body = new FormEncodingBuilder().add("user_id", login.data.getUserId()+"").build();
-
-                    if(remember_pwd.isChecked()) {
-                        sp.edit().putString(usernameTmp, password).commit();
-                    }
-
-                    try{
-                        NetUtils.postJson("http://115.156.245.150:8080/AndroidApp/getUserInfo", body, app, new Callback() {
-                            @Override
-                            public void onFailure(Request request, IOException e) {
-
-                                //用户信息获取失败
-
-                            }
-
-                            @Override
-                            public void onResponse(Response response) throws IOException {
-                                String userInfoJson = response.body().toString();
-                                UserInfo userInfo = gson.fromJson(response.body().charStream(), UserInfo.class);
-                                //绑定数据并跳转
-                                Intent intent = new Intent(MainActivity.this, login.class);
-                                intent.putExtra("userInfo", userInfo);
-                                startActivity(intent);
-                            }
-                        });
-
-                    }catch (IOException e){
-                        Toast.makeText(MainActivity.this, "用户名或密码错误， 请重新登录", Toast.LENGTH_LONG).show();
-                    }
-
-                }else{
-                    //登录失败
-//                    Looper.prepare();
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this, "用户名或密码错误， 请重新登录", Toast.LENGTH_LONG).show();
-
-                        }
-                    });
-                }
-
+                Intent intent = new Intent(MainActivity.this, login.class);
+                intent.putExtra("userInfo", userInfo);
+                startActivity(intent);
             }
         };
 
-        Log.i("fl", gson.toJson(u));
         RequestBody body = new FormEncodingBuilder().add("user_name", u.getUser_name()).add("user_password", u.getUser_password()).build();
 
         try{
-            NetUtils.postJson("http://115.156.245.150:8080/AndroidApp/login", body, this.getApplication(), callback);
-
+            NetUtils.postJson("http://120.27.106.26/app/login", body, this.getApplication(), callback);
         }catch(IOException e){
             //登录失败处理
             Toast.makeText(MainActivity.this, "用户名或密码错误， 请重新登录", Toast.LENGTH_LONG).show();

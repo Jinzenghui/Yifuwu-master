@@ -30,17 +30,18 @@ import Pojo.AcceptOrderMessage;
 import Pojo.NewOrderDetailInfo;
 import Utils.NetUtils;
 
-public class OrderDetail extends Activity {
+public class Preprocessingdetailmessage extends Activity {
+
+    private Button receiptBtn, releaseBtn, backBtn;
+
+    private NewOrderDetailInfo newOrderDetailInfo;
+
+    private String work_order_id;
 
     private TextView orderNumberTextView, orderGradeTextView, beginTimeTextView, typeTextView, areaTextView, usertelephonenumberTextView, symptomTextView, complaintstimeTextView, complaintsaddressTextView;
     private TextView guestbookTextView, preprocessingTextView;
 
-    private Button acceptBtn, giveupBtn;
-
-    private NewOrderDetailInfo newOrderDetailInfo;
-
     private TextView guestBookTextView, preProcessingMessageTextView;
-
 
     int minute;
     int second;
@@ -172,13 +173,16 @@ public class OrderDetail extends Activity {
 
     };
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.activity_order_detail);
+        setContentView(R.layout.activity_preprocessingdetailmessage);
 
         newOrderDetailInfo = (NewOrderDetailInfo)getIntent().getParcelableExtra("NewOrderDetailInfo");
+        work_order_id = newOrderDetailInfo.getData().getWork_order_id();
 
         String remaining_time =  "0000-00-00 " + newOrderDetailInfo.getData().getRemaining_time();
         Date date = null;
@@ -197,48 +201,32 @@ public class OrderDetail extends Activity {
         minute = cal.get(Calendar.MINUTE);
         second = cal.get(Calendar.SECOND);
 
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getWork_order_id());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getWork_order_level());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getCreate_time());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getRemaining_time());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getWork_order_type_code());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getComplaint_tele_num());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getComplaint_time());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getComplaint_position());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getMessage());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getGps_lon());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getGps_lat());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getPre_deal_result());
 
-        initView();
+        receiptBtn = (Button)findViewById(R.id.btnReceipt);
+        releaseBtn = (Button)findViewById(R.id.btnRelease);
+        backBtn = (Button)findViewById(R.id.btnBack);
 
-        acceptBtn.setOnClickListener(new View.OnClickListener() {
+        receiptBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                Intent intent = new Intent(Preprocessingdetailmessage.this, acknowledgement.class);
+                intent.putExtra("Work_Order_Id", work_order_id);
+                startActivity(intent);
             }
         });
 
-        giveupBtn.setOnClickListener(new View.OnClickListener() {
+        releaseBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                releaseOrder(work_order_id);
+            }
+        });
+
+        backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
-            }
-        });
-
-        guestBookTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(OrderDetail.this, Guestbook.class);
-                startActivity(intent);
-            }
-        });
-
-        preProcessingMessageTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(OrderDetail.this, Preprocessingdetailmessage.class);
-                startActivity(intent);
             }
         });
 
@@ -260,9 +248,6 @@ public class OrderDetail extends Activity {
 
         timeView = (TextView)findViewById(R.id.resttime);
 
-        acceptBtn = (Button)findViewById(R.id.accept);
-        giveupBtn = (Button)findViewById(R.id.giveup);
-
         guestBookTextView = (TextView)findViewById(R.id.guestbook_message);
 
         preProcessingMessageTextView = (TextView)findViewById(R.id.preprocessingmessage);
@@ -281,7 +266,6 @@ public class OrderDetail extends Activity {
         setPreprocessingTextView();
 
     }
-
 
     //显示工单编号
     public void setOrderNumberTextView(){
@@ -356,9 +340,8 @@ public class OrderDetail extends Activity {
         preprocessingTextView.setText(newOrderDetailInfo.getData().getPre_deal_result());
     }
 
+    public void releaseOrder(String work_order_id){
 
-    public void acceptOrder(String work_order_id)
-    {
         final Gson gson = new Gson();
 
         Callback callback = new Callback(){
@@ -380,23 +363,13 @@ public class OrderDetail extends Activity {
 
                     if(acceptOrderMessage.getResult() == 0){
 
-                        Toast.makeText(OrderDetail.this, "接单成功", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Preprocessingdetailmessage.this, "释放成功", Toast.LENGTH_SHORT).show();
 
                     }else if(acceptOrderMessage.getResult() == -1){
 
-                        Toast.makeText(OrderDetail.this, "接单失败" + acceptOrderMessage.getText(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(Preprocessingdetailmessage.this, "释放失败" + acceptOrderMessage.getText(), Toast.LENGTH_LONG).show();
 
                     }
-
-
-
-
-
-//                    Intent intent = new Intent(WorkOrder.this, PendingOrder.class);
-//                    intent.putExtra("FirstPageNewOrderOverviewInfo", newOdersOverviewInfo);
-//                    intent.putExtra("New_Orders_Number", new_orders);
-//                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    startActivity(intent);
 
                 }else{
                     throw new IOException("Unexpected code " + response);
@@ -404,7 +377,7 @@ public class OrderDetail extends Activity {
             }
         };
 
-        RequestBody body = new FormEncodingBuilder().add("work_order_id", work_order_id + "").add("handle_action", 2 + "").build();
+        RequestBody body = new FormEncodingBuilder().add("work_order_id", work_order_id + "").add("handle_action", 3 + "").build();
 
         try{
 
@@ -412,15 +385,9 @@ public class OrderDetail extends Activity {
 
         }catch(IOException e){
 
-            Toast.makeText(OrderDetail.this, "接单失败", Toast.LENGTH_LONG).show();
+            Toast.makeText(Preprocessingdetailmessage.this, "接单失败", Toast.LENGTH_LONG).show();
 
         }
-
     }
-
-
-
-
-
 
 }

@@ -59,32 +59,33 @@ public class Register extends AppCompatActivity {
 
                     new AlertDialog.Builder(Register.this).setTitle("提示").setMessage("用户名不能为空！").setPositiveButton("确定", null).show();
 
-                }
+                }else if(work_station.equals("")){
 
-                if(work_station.equals("")){
                     new AlertDialog.Builder(Register.this).setTitle("提示").setMessage("负责工位不能为空！").setPositiveButton("确定", null).show();
-                }
 
-                if(telep_num.equals("")){
+                }else if(telep_num.equals("")){
+
                     new AlertDialog.Builder(Register.this).setTitle("提示").setMessage("手机号码不能为空！").setPositiveButton("确定", null).show();
-                }
 
-                if(sex.equals(""))
+                }else if(sex.equals(""))
                 {
                     new AlertDialog.Builder(Register.this).setTitle("提示").setMessage("请选择性别！").setPositiveButton("确定", null).show();
-                }
 
-                if(password.equals(""))
+                }else if(password.equals(""))
                 {
                     new AlertDialog.Builder(Register.this).setTitle("提示").setMessage("密码不能为空！").setPositiveButton("确定", null).show();
-                }
 
-                if(! (password.length() == 8))
+                }else if(! (password.length() == 8))
                 {
                     new AlertDialog.Builder(Register.this).setTitle("提示").setMessage("密码必须为8位数字或者字母组合，不含特殊字符！").setPositiveButton("确定", null).show();
-                }
-                else if(!password.equals(confirm_pwd)){
+
+                }else if(!password.equals(confirm_pwd)){
                     new AlertDialog.Builder(Register.this).setTitle("提示").setMessage("设置的密码和确认密码不一致！").setPositiveButton("确定", null).show();
+
+                }else{
+
+                    setRegisterInfo(user_name, password, work_station, telep_num, sex);
+
                 }
 
             }
@@ -231,7 +232,6 @@ public class Register extends AppCompatActivity {
     //发送给后台用户的注册信息
     //传入参数：用户名：user_name; 用户密码：user_password; 负责工位：work_station; 手机号码：contact; 用户性别: user_gender;
 
-
     public void setRegisterInfo(final String user_name, final String user_password, String work_station, String contact, String user_gender){
 
         final Gson gson = new Gson();
@@ -261,7 +261,7 @@ public class Register extends AppCompatActivity {
 
                 if(registerCallbackInfo.getResult() == 0){
 
-                    Toast.makeText(Register.this, registerCallbackInfo.getText() + "，正在登录....", Toast.LENGTH_LONG).show();
+                    Toast.makeText(Register.this, registerCallbackInfo.getText() + "，正在登录....", Toast.LENGTH_SHORT).show();
 
                     RequestBody bodyLogin = new FormEncodingBuilder().add("user_name", user_name).add("user_password", user_password).build();
 
@@ -288,6 +288,8 @@ public class Register extends AppCompatActivity {
 
                     }
 
+                }else {
+                    Toast.makeText(Register.this, registerCallbackInfo.getText() + "!", Toast.LENGTH_LONG).show();
                 }
             }
         };

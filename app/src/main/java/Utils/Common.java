@@ -70,7 +70,7 @@ public class Common {
             String txt = drsg.getString("txt");
             weatherInfo.setSuggest(txt);
 
-            weatherInfo_String = city + " " + "最高温度：" + max + "°C" + "," + "最低温度：" + min + "°C," + " " + qlty + " " + txt;
+            weatherInfo_String = "          " + city + "市，今天" + "最高温度：" + max + "°C" + "," + "最低温度：" + min + "°C," + " " + qlty + " " + txt;
 
         }catch (Exception e){
 
@@ -80,10 +80,6 @@ public class Common {
 
         return weatherInfo_String;
 
-
     }
-
-
-
 
 }

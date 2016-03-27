@@ -16,9 +16,11 @@ public class UserInfo implements Parcelable{
     }
 
     private UserInfo(Parcel in){
-        this.data = in.readParcelable(User.class.getClassLoader());
-        this.result = in.readInt();
+
         this.text = in.readString();
+        this.result = in.readInt();
+        this.data = in.readParcelable(User.class.getClassLoader());
+
     }
 
     @Override
@@ -62,6 +64,7 @@ public class UserInfo implements Parcelable{
     public static final Parcelable.Creator<UserInfo> CREATOR = new Parcelable.Creator<UserInfo>(){
         @Override
         public UserInfo createFromParcel(Parcel source) {
+
             return new UserInfo(source);
         }
 
@@ -86,7 +89,6 @@ public class UserInfo implements Parcelable{
 
         public User() {
 
-
         }
 
         private User(Parcel in){
@@ -98,8 +100,6 @@ public class UserInfo implements Parcelable{
             this.last_login_time = in.readString();
             this.work_station = in.readString();
         }
-
-
 
         @Override
         public int describeContents() {
