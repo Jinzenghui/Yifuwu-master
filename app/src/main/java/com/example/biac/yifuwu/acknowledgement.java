@@ -143,11 +143,6 @@ public class acknowledgement extends Activity {
             }
         });
 
-
-
-
-
-
     }
 
     public void initView(){

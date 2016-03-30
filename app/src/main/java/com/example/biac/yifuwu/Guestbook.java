@@ -3,6 +3,7 @@ package com.example.biac.yifuwu;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,35 +15,45 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import Pojo.GuestbookMessage;
 import Pojo.Message;
 
 public class Guestbook extends Activity {
 
     private ListView lv;
+    private GuestbookMessage guestbookMessage;
 
     ChatAdapter ca;
 
-    private List<Message> getData(){
+    private List<Message> getData(GuestbookMessage guestbookMessage){
 
         List<Message> msgList = new ArrayList<Message>();
         Message msg;
 
-        msg = new Message();
-        msg.setType(ChatAdapter.GUEST_TYPE);
-        msg.setTime("2016/3/8 14:27");
-        msg.setInfomation("上得了网， 打不了电话，快点解决");
-        msgList.add(msg);
+        for(int i=0; i < guestbookMessage.getData().size(); i++){
 
+            msg = new Message();
 
-        msg = new Message();
-        msg.setType(ChatAdapter.SYSTEM_TYPE);
-        msg.setTime("2016/3/8  15:31");
-        msg.setInfomation("用户，你好！你所在位置的基站发生故障，请耐心等待");
-        msgList.add(msg);
+            if(guestbookMessage.getData().get(i).getMessage_type().equals("用户留言")){
+
+                msg.setType(ChatAdapter.GUEST_TYPE);
+
+            }else if(guestbookMessage.getData().get(i).getMessage_type().equals("系统回复")){
+
+                msg.setType(ChatAdapter.SYSTEM_TYPE);
+
+            }
+
+            msg.setTime(guestbookMessage.getData().get(i).getMessage_time());
+            msg.setInfomation(guestbookMessage.getData().get(i).getMessage_content());
+            msgList.add(msg);
+
+        }
 
         return msgList;
 
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,12 +61,17 @@ public class Guestbook extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_guestbook);
 
+        guestbookMessage = (GuestbookMessage)getIntent().getParcelableExtra("GuestbookMessage");
+
+        Log.i("Jin-guestbook1", guestbookMessage.getText() + "");
+        Log.i("Jin-guestbook1", guestbookMessage.getResult() + "");
+        Log.i("Jin-guestbook1", guestbookMessage.getData().size() + "");
+
         lv = (ListView)findViewById(R.id.lv_data);
 
-        ca = new ChatAdapter(this, getData());
+        ca = new ChatAdapter(this, getData(guestbookMessage));
 
         lv.setAdapter(ca);
-
 
     }
 

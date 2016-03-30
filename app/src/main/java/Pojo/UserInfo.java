@@ -77,6 +77,7 @@ public class UserInfo implements Parcelable{
 
     public static class User implements Parcelable {
 
+        private String user_name;
         private int user_id;
         private int total_login_times;
         private int total_work_orders;
@@ -92,6 +93,7 @@ public class UserInfo implements Parcelable{
         }
 
         private User(Parcel in){
+            this.user_name = in.readString();
             this.user_id = in.readInt();
             this.total_login_days = in.readInt();
             this.total_login_times = in.readInt();
@@ -109,6 +111,7 @@ public class UserInfo implements Parcelable{
         @Override
         public void writeToParcel(Parcel dest, int flags) {
 
+            dest.writeString(this.user_name);
             dest.writeInt(this.user_id);
             dest.writeInt(total_login_days);
             dest.writeInt(total_login_times);
@@ -118,6 +121,17 @@ public class UserInfo implements Parcelable{
             dest.writeString(this.work_station);
 
         }
+
+        public String getUser_name(){
+            return user_name;
+        }
+
+        public void setUser_name(String user_name){
+
+            this.user_name = user_name;
+
+        }
+
 
         public int getUser_id() {
             return user_id;

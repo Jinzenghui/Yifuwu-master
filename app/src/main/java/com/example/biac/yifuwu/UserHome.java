@@ -114,6 +114,9 @@ public class UserHome extends Activity {
         userId = userInfo.getData().getUser_id();
         workStation = userInfo.getData().getWork_station();
 
+        Log.i("Jin-user-id", userId + "");
+
+
         initView();
 
         if(overviewInfo.getData().getProcessing_work_orders() > 0){
@@ -224,7 +227,7 @@ public class UserHome extends Activity {
 
     //显示姓名
     public void setNameText(){
-        nameText.setText("名称：" + userInfo.getData().getUser_id());
+        nameText.setText("名称：" + userInfo.getData().getUser_name());
     }
 
     //显示工作

@@ -41,8 +41,6 @@ public class NetUtils {
 
     }
 
-
-
     public static void getWeather(String url,Application app, Callback callback){
         OkHttpClient client = ((MyApplication)app).getClient();
         Request request = new Request.Builder().url(url).header("apikey", "c2b72ceb034408448d51f52dd2cc857c").build();

@@ -79,15 +79,17 @@ public class NewOrderDetailInfo implements Parcelable {
 
         private String work_order_id;
         private String work_order_level;
-        private String create_time;
         private String remaining_time;
-        private String work_order_type_code;
+        private String create_time;
+        private String work_order_type;
+        private String area;
         private String complaint_tele_num;
+        private String pheno;
         private String complaint_time;
         private String complaint_position;
         private String message;
-        private String gps_lon;
-        private String gps_lat;
+        private Double gps_lon;
+        private Double gps_lat;
         private String pre_deal_result;
 
         public NewOrderDetail(){
@@ -98,15 +100,17 @@ public class NewOrderDetailInfo implements Parcelable {
 
             this.work_order_id = in.readString();
             this.work_order_level = in.readString();
-            this.create_time = in.readString();
             this.remaining_time = in.readString();
-            this.work_order_type_code = in.readString();
+            this.create_time = in.readString();
+            this.work_order_type = in.readString();
+            this.area = in.readString();
             this.complaint_tele_num = in.readString();
+            this.pheno = in.readString();
             this.complaint_time = in.readString();
             this.complaint_position = in.readString();
             this.message = in.readString();
-            this.gps_lon = in.readString();
-            this.gps_lat = in.readString();
+            this.gps_lon = in.readDouble();
+            this.gps_lat = in.readDouble();
             this.pre_deal_result = in.readString();
 
         }
@@ -121,15 +125,17 @@ public class NewOrderDetailInfo implements Parcelable {
 
             dest.writeString(this.work_order_id);
             dest.writeString(this.work_order_level);
-            dest.writeString(this.create_time);
             dest.writeString(this.remaining_time);
-            dest.writeString(this.work_order_type_code);
+            dest.writeString(this.create_time);
+            dest.writeString(this.work_order_type);
+            dest.writeString(this.area);
             dest.writeString(this.complaint_tele_num);
+            dest.writeString(this.pheno);
             dest.writeString(this.complaint_time);
             dest.writeString(this.complaint_position);
             dest.writeString(this.message);
-            dest.writeString(this.gps_lon);
-            dest.writeString(this.gps_lat);
+            dest.writeDouble(this.gps_lon);
+            dest.writeDouble(this.gps_lat);
             dest.writeString(this.pre_deal_result);
 
         }
@@ -187,12 +193,30 @@ public class NewOrderDetailInfo implements Parcelable {
             return this.remaining_time;
         }
 
-        public void setWork_order_type_code(String work_order_type_code){
-            this.work_order_type_code = work_order_type_code;
+        public void setWork_order_type(String work_order_type_code){
+            this.work_order_type = work_order_type_code;
         }
 
-        public String getWork_order_type_code(){
-            return this.work_order_type_code;
+        public String getWork_order_type(){
+            return this.work_order_type;
+        }
+
+        public void setArea(String area){
+            this.area = area;
+        }
+
+        public String getArea(){
+            return this.area;
+        }
+
+
+
+        public void setPheno(String pheno){
+            this.pheno = pheno;
+        }
+
+        public String getPheno(String pheno){
+            return this.pheno;
         }
 
         public void setComplaint_tele_num(String complaint_tele_num){
@@ -227,19 +251,19 @@ public class NewOrderDetailInfo implements Parcelable {
             return this.message;
         }
 
-        public void setGps_lon(String gps_lon){
+        public void setGps_lon(double gps_lon){
             this.gps_lon = gps_lon;
         }
 
-        public String getGps_lon(){
+        public double getGps_lon(){
             return gps_lon;
         }
 
-        public void setGps_lat(String gps_lat){
+        public void setGps_lat(double gps_lat){
             this.gps_lat = gps_lat;
         }
 
-        public String getGps_lat(){
+        public double getGps_lat(){
             return this.gps_lat;
         }
 

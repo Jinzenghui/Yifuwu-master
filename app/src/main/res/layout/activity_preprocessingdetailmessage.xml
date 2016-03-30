@@ -13,10 +13,7 @@
         android:id="@+id/preprocessingdetail"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
-        android:text="@string/lorem_ipsum"
         android:gravity="center_horizontal"
         />
-
-
 
 </RelativeLayout>

@@ -10,6 +10,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.style.AbsoluteSizeSpan;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -120,6 +121,25 @@ public class Register extends AppCompatActivity {
         user_name_editText.setHint(new SpannableString(user_name_span));
         password_editText.setHint(new SpannableString(pwd_span));
 
+        sexGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+
+                if (checkedId == male_radioButton.getId()) {
+
+                    sex = male_radioButton.getText().toString();
+
+                } else if (checkedId == female_radioButton.getId()) {
+
+                    sex = female_radioButton.getText().toString();
+
+                } else {
+                    sex = "";
+                }
+
+            }
+        });
+
     }
 
     public void listenInputType(){
@@ -208,25 +228,6 @@ public class Register extends AppCompatActivity {
         telep_num = telep_num_editText.getText().toString();
         password = password_editText.getText().toString();
         confirm_pwd = confirm_pwd_editText.getText().toString();
-
-        sexGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-
-                if (checkedId == male_radioButton.getId()) {
-
-                    sex = male_radioButton.getText().toString();
-
-                } else if (checkedId == female_radioButton.getId()) {
-
-                    sex = female_radioButton.getText().toString();
-
-                } else {
-                    sex = "";
-                }
-
-            }
-        });
     }
 
     //发送给后台用户的注册信息
@@ -247,26 +248,32 @@ public class Register extends AppCompatActivity {
             @Override
             public void onResponse(Response response) throws IOException {
 
-                RegisterCallbackInfo registerCallbackInfo;
+                RegisterCallbackInfo registerCallbackInfo = new RegisterCallbackInfo();
 
                 if(response.isSuccessful()){
 
                     registerCallbackInfo = gson.fromJson(response.body().charStream(), RegisterCallbackInfo.class);
 
+
+                    Log.i("Jin-Register1", response.body().toString());
+
+
                 }else{
 
-                    throw new IOException("Unexpected code " + response);
+                    //throw new IOException("Unexpected code " + response);
+                    Log.i("Jin-Register2", response.body().toString());
 
                 }
 
                 if(registerCallbackInfo.getResult() == 0){
 
-                    Toast.makeText(Register.this, registerCallbackInfo.getText() + "，正在登录....", Toast.LENGTH_SHORT).show();
+                    Log.i("Jin-register", registerCallbackInfo.getText());
 
+//                    Toast.makeText(Register.this, registerCallbackInfo.getText() + "，正在登录....", Toast.LENGTH_SHORT).show();
+//
                     RequestBody bodyLogin = new FormEncodingBuilder().add("user_name", user_name).add("user_password", user_password).build();
 
                     try{
-
                         NetUtils.postJson("http://120.27.106.26/app/login", bodyLogin, app, new Callback() {
                             @Override
                             public void onFailure(Request request, IOException e) {
@@ -289,7 +296,8 @@ public class Register extends AppCompatActivity {
                     }
 
                 }else {
-                    Toast.makeText(Register.this, registerCallbackInfo.getText() + "!", Toast.LENGTH_LONG).show();
+                   //Toast.makeText(Register.this, registerCallbackInfo.getText() + "!", Toast.LENGTH_LONG).show();
+                    Log.i("Jin-register", registerCallbackInfo.getText());
                 }
             }
         };
@@ -298,10 +306,10 @@ public class Register extends AppCompatActivity {
 
         try{
 
-            NetUtils.postJson("http:120.27.106.26/app/register", body, this.getApplication(), callback);
+            NetUtils.postJson("http://120.27.106.26/app/register", body, this.getApplication(), callback);
 
         }catch(IOException e){
-
+            Toast.makeText(Register.this, "发送注册信息失败", Toast.LENGTH_LONG).show();
         }
     }
 }

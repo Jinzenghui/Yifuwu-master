@@ -43,6 +43,7 @@ public class PendingOrder extends Activity {
 
     private NewOdersOverviewInfo newOrdersOverviewInfo;
     private String work_order_id;
+    private int user_id;
 
     private List<Map<String, String>> mData;
 
@@ -75,7 +76,7 @@ public class PendingOrder extends Activity {
 
         Map<String, String> map = new HashMap<String, String>();
 
-        for(int i=0; i < newOrdersOverviewInfo.getSum(); i++){
+        for(int i=0; i < newOrdersOverviewInfo.getData().size(); i++){
 
             map.put("number", "编号：" + newOrdersOverviewInfo.getData().get(i).getWork_order_id());
 
@@ -100,11 +101,9 @@ public class PendingOrder extends Activity {
             newOrdersOverviewInfo = (NewOdersOverviewInfo) msg.obj;
 
             mData = getDate(newOrdersOverviewInfo);
+            ma.notifyDataSetChanged();
         }
     };
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +114,8 @@ public class PendingOrder extends Activity {
         newOrdersOverviewInfo = (NewOdersOverviewInfo)getIntent().getParcelableExtra("FirstPageNewOrderOverviewInfo");
 
         totalnumber = (int)getIntent().getIntExtra("New_Orders_Number", 0);
+
+        user_id = (int)getIntent().getIntExtra("User_id", 0);
 
         work_order_status = (String)getIntent().getStringExtra("Work_order_status");
 
@@ -158,7 +159,8 @@ public class PendingOrder extends Activity {
 
                 work_order_id = newOrdersOverviewInfo.getData().get(position).getWork_order_id();
 
-                Log.i("Jin12345", work_order_id);
+                Log.i("Jin-staus", work_order_status);
+                Log.i("Jin-id", work_order_id);
 
                 getNewOrderDetailInfo(work_order_status, work_order_id);
 
@@ -189,9 +191,7 @@ public class PendingOrder extends Activity {
 
         index--;
 
-        getNewOrdersOverviewInfo(work_order_status,index);
-
-        ma.notifyDataSetChanged();
+        getNewOrdersOverviewInfo(work_order_status, (index + 1), user_id);
 
         checkButton();
 
@@ -202,19 +202,14 @@ public class PendingOrder extends Activity {
 
         index++;
 
-        getNewOrdersOverviewInfo(work_order_status, index);
-
-        ma.notifyDataSetChanged();
+        getNewOrdersOverviewInfo(work_order_status, (index + 1), user_id);
 
         checkButton();
 
         setPagenumber();
     }
 
-
     public void checkButton(){
-
-//        int totalnumber = getTotalnumber();
 
         double pagenumber = Math.ceil((double)totalnumber / VIEW_COUNT);
 
@@ -242,15 +237,11 @@ public class PendingOrder extends Activity {
     //显示总的工单数目
     public void setTotalnumber(){
 
-//        int totalnumber = getTotalnumber();
-
         tv1.setText("总数：" + totalnumber);
     }
 
     //显示页数
     public void setPagenumber(){
-
-//        int totalnumber = getTotalnumber();
 
         double pagenumber = Math.ceil((double) totalnumber / VIEW_COUNT);
 
@@ -258,13 +249,6 @@ public class PendingOrder extends Activity {
 
         tv2.setText("页数：" + (index + 1) + "/" + pn );
     }
-
-    //获得工单的总数
-//    public int getTotalnumber(){
-//
-//        return mData.size();
-//
-//    }
 
     //获得页数的索引
     public int getPageIndex(){
@@ -286,14 +270,6 @@ public class PendingOrder extends Activity {
 
         @Override
         public int getCount() {
-
-//            int ori = VIEW_COUNT * index;
-//
-//            if(mData.size() - ori < VIEW_COUNT){
-//                return mData.size() - ori;
-//            }else{
-//                return VIEW_COUNT;
-//            }
 
             return mData.size();
 
@@ -337,7 +313,7 @@ public class PendingOrder extends Activity {
         }
     }
 
-    public void getNewOrderDetailInfo(final String work_order_status, String work_order_id)
+    public void getNewOrderDetailInfo(final String work_order_status, final String work_order_id)
     {
         final Gson gson = new Gson();
 
@@ -351,32 +327,62 @@ public class PendingOrder extends Activity {
             @Override
             public void onResponse(Response response) throws IOException {
 
-                NewOrderDetailInfo newOrderDetailInfo;
+                NewOrderDetailInfo newOrderDetailInfo = new NewOrderDetailInfo();
+
+
+//                Log.i("Jin-id-response", response.body().);
 
                 if(response.isSuccessful()){
 
+//                    Reader r = response.body().charStream();
+//                    int line = 0;
+////                    StringBuffer sb = new StringBuffer();StringBuffer
+//                    char[] buffer = new char[1024];
+//                    while((line = r.read(buffer))!=-1){
+////                        sb.append(buffer);buffer
+//                        Log.i("fl",new String(buffer));
+//                    }
+
                     newOrderDetailInfo = gson.fromJson(response.body().charStream(), NewOrderDetailInfo.class);
 
-                    if(work_order_status == 1 + "") {
+                    Log.i("Jin-id-response", "response successful");
+                    Log.i("Jin-response-status", work_order_status);
+
+                    if(work_order_status.equals("2")) {
+
+                        Log.i("Jin12345", newOrderDetailInfo.getText());
 
                         Intent intent = new Intent(PendingOrder.this, OrderDetail.class);
+                        intent.putExtra("User_Id", user_id);
+                        intent.putExtra("Work_Order_Id", work_order_id);
                         intent.putExtra("NewOrderDetailInfo", newOrderDetailInfo);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
 
-                    }else if(work_order_status == (2 + "")){
+                    }else if(work_order_status.equals("3")){
+
+                        Log.i("Jin12345", newOrderDetailInfo.getText());
+
                         Intent intent = new Intent(PendingOrder.this, PreprocessingOrderDetail.class);
+                        intent.putExtra("User_Id", user_id);
+                        intent.putExtra("Work_Order_Id", work_order_id);
                         intent.putExtra("NewOrderDetailInfo", newOrderDetailInfo);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
 
-                    }else if(work_order_status == (3 + "")){
+                    }else if(work_order_status.equals("4")){
+
+                        Log.i("Jin12345", newOrderDetailInfo.getText());
 
                         Intent intent = new Intent(PendingOrder.this, CompletedOrderDetail.class);
+                        intent.putExtra("User_Id", user_id);
+                        intent.putExtra("Work_Order_Id", work_order_id);
                         intent.putExtra("NewOrderDetailInfo", newOrderDetailInfo);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
 
+                    }else{
+                        Log.i("Jin-response-status345", work_order_status);
                     }
 
                 }else{
@@ -389,7 +395,10 @@ public class PendingOrder extends Activity {
 
         try{
 
-            NetUtils.postJson("http://120.27.106.26/app/getNewOrdersDetailsInfo", body, this.getApplication(), callback);
+//            Log.i("Jin-staus", work_order_status + " here");
+//            Log.i("Jin-id", work_order_id + " here");
+
+            NetUtils.postJson("http://120.27.106.26/app/getSelectedOrdersDetailsInfo", body, this.getApplication(), callback);
 
         }catch(IOException e){
 
@@ -399,7 +408,7 @@ public class PendingOrder extends Activity {
 
     }
 
-    public void getNewOrdersOverviewInfo(String work_order_status  ,int pagenumber )
+    public void getNewOrdersOverviewInfo(String work_order_status  ,int pagenumber, int user_id )
     {
         final Gson gson = new Gson();
 
@@ -419,11 +428,12 @@ public class PendingOrder extends Activity {
 
                     newOdersOverviewInfo = gson.fromJson(response.body().charStream(), NewOdersOverviewInfo.class);
 
+                    Log.i("Jin-new-order", newOdersOverviewInfo.getData().get(0).getCreate_time());
+
                     Message message = Message.obtain();
                     message.obj = newOdersOverviewInfo;
                     message.what = NEWORDERSOVERVIEWINFO;
                     handler.sendMessage(message);
-
 
                 }else{
                     throw new IOException("Unexpected code " + response);
@@ -431,11 +441,11 @@ public class PendingOrder extends Activity {
             }
         };
 
-        RequestBody body = new FormEncodingBuilder().add("work_order_status", work_order_status).add("page", pagenumber + "").add("num", 3 + "").build();
+        RequestBody body = new FormEncodingBuilder().add("work_order_status", work_order_status).add("page", pagenumber + "").add("num", 3 + "").add("user_id", user_id+"").build();
 
         try{
 
-            NetUtils.postJson("http://120.27.106.26/app/getNewOrdersOverviewInfo", body, this.getApplication(), callback);
+            NetUtils.postJson("http://120.27.106.26/app/getSelectedOrdersOverviewInfo", body, this.getApplication(), callback);
 
         }catch(IOException e){
 
@@ -444,9 +454,5 @@ public class PendingOrder extends Activity {
         }
 
     }
-
-
-
-
 
 }

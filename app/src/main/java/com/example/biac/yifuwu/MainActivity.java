@@ -8,9 +8,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
-        sp = this.getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        sp = this.getSharedPreferences("userInfo2", Context.MODE_PRIVATE);
 
         initView();
 
@@ -60,19 +60,20 @@ public class MainActivity extends Activity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String[] allUserName = new String[sp.getAll().size()];
-                allUserName = sp.getAll().keySet().toArray(new String[0]);
-
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line,allUserName);
-
-                userName.setAdapter(adapter);
+//                Log.i("fl", sp.getString("USER_NAME", "null"));
+//                String[] allUserName;
+//                allUserName = sp.getStringSet("",null).toArray(new String[sp.getAll().size()]);
+//
+//                ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_dropdown_item_1line,allUserName);
+//
+//                userName.setAdapter(adapter);
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(remember_pwd.isChecked()) {
-                    password.setText(sp.getString(userName.getText().toString(), ""));
-                }
+//                if(remember_pwd.isChecked()) {
+//                    password.setText(sp.getString(userName.getText().toString(), ""));
+//                }
             }
         });
 
@@ -81,7 +82,6 @@ public class MainActivity extends Activity {
             remember_pwd.setChecked(true);
             userName.setText(sp.getString("USER_NAME", ""));
             password.setText(sp.getString("PASSWORD", ""));
-
             String name = sp.getString("USER_NAME", "");
             String password = sp.getString("PASSWORD", "");
 
@@ -110,7 +110,7 @@ public class MainActivity extends Activity {
                 //获取用户输入的用户名和密码
                 userNameValue = userName.getText().toString();
                 passwordValue = password.getText().toString();
-
+//
 //                if (remember_pwd.isChecked()) {
 //                    SharedPreferences.Editor editor = sp.edit();
 //                    editor.putString("USER_NAME", userNameValue);
@@ -119,7 +119,6 @@ public class MainActivity extends Activity {
 //                }
 
                 userLogin(userNameValue, passwordValue);
-
 
             }
         });
@@ -187,18 +186,49 @@ public class MainActivity extends Activity {
             @Override
             public void onResponse(Response response) throws IOException {
 
-                if (remember_pwd.isChecked()) {
-                    SharedPreferences.Editor editor = sp.edit();
-                    editor.putString("USER_NAME", userNameValue);
-                    editor.putString("PASSWORD", passwordValue);
-                    editor.commit();
+                UserInfo userInfo;
+
+                if(response.isSuccessful()){
+
+                    userInfo = gson.fromJson(response.body().charStream(), UserInfo.class);
+
+                    Log.i("Jin_result", userInfo.getResult() + "");
+//                    Log.i("Jin_text", userInfo.getText());
+//                    Log.i("Jin-user_id", userInfo.getData().getUser_id()+"");
+//                    Log.i("Jin-user_id", userInfo.getData().getTotal_login_times()+"");
+//                    Log.i("Jin-user_id", userInfo.getData().getTotal_work_orders()+"");
+//                    Log.i("Jin-user_id", userInfo.getData().getPoints()+"");
+//                    Log.i("Jin-user_id", userInfo.getData().getUser_rank()+"");
+//                    Log.i("Jin-user_id", userInfo.getData().getTotal_login_days()+"");
+//                    Log.i("Jin-user_id", userInfo.getData().getLast_login_time()+"");
+//                    Log.i("Jin-user_id", userInfo.getData().getWork_station()+"");
+
+                }else{
+
+                    throw new IOException("Unexpected code " + response);
+
                 }
 
-                UserInfo userInfo = gson.fromJson(response.body().charStream(), UserInfo.class);
+                if(userInfo.getResult() == 0){
+//
+                    if (remember_pwd.isChecked()) {
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.putString("USER_NAME", userNameValue);
+                        editor.putString("PASSWORD", passwordValue);
+                        editor.commit();
 
-                Intent intent = new Intent(MainActivity.this, login.class);
-                intent.putExtra("userInfo", userInfo);
-                startActivity(intent);
+                    }
+
+                    Intent intent = new Intent(MainActivity.this, login.class);
+                    intent.putExtra("userInfo", userInfo);
+                    startActivity(intent);
+
+                }else if(userInfo.getResult() == -1){
+
+                    Log.i("Jin_result", userInfo.getResult() + "");
+                    Log.i("Jin_text", userInfo.getText());
+
+                }
             }
         };
 

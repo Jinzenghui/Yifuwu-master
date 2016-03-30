@@ -8,11 +8,12 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
 import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 
 import java.io.IOException;
@@ -41,12 +42,14 @@ public class login extends Activity {
 
         user_Info = (UserInfo)getIntent().getParcelableExtra("userInfo");
 
+        userId = user_Info.getData().getUser_id();
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try{
-                    Thread.sleep(1000);
-                    getOrdersOverviewInfo();
+                    Thread.sleep(0);
+                    getOrdersOverviewInfo(userId);
                     finish();
                 }catch(InterruptedException e){
                     e.printStackTrace();
@@ -63,8 +66,7 @@ public class login extends Activity {
 
     }
 
-
-    public void getOrdersOverviewInfo()
+    public void getOrdersOverviewInfo(int userId )
     {
 
         final Gson gson = new Gson();
@@ -78,13 +80,14 @@ public class login extends Activity {
             @Override
             public void onResponse(Response response) throws IOException {
 
-                OrdersOverviewInfo overviewInfo;
+                OrdersOverviewInfo overviewInfo = new OrdersOverviewInfo();
 
                 if(response.isSuccessful()){
 
                     overviewInfo = gson.fromJson(response.body().charStream(), OrdersOverviewInfo.class);
 
-                    Log.i("Jin123", " " + overviewInfo.getData().getCompleted_work_orders());
+//                    Log.i("Jin-orders-overview-Info", "" + overviewInfo.getResult());
+//                    Log.i("Jin-orders-overview-Info", overviewInfo.getText());
 
                     Intent intent = new Intent(login.this, UserHome.class);
                     intent.putExtra("OrdersOverviewInfo", overviewInfo);
@@ -99,13 +102,16 @@ public class login extends Activity {
             }
         };
 
+        RequestBody body = new FormEncodingBuilder().add("user_id", userId + "").build();
+
+
         try {
 
-            NetUtils.getJson("http://120.27.106.26/app/getOrdersOverviewInfo", this.getApplication(), callback);
+            NetUtils.postJson("http://120.27.106.26/app/getOrdersOverviewInfo", body, this.getApplication(), callback);
 
         }catch(IOException e){
 
-            Toast.makeText(login.this, "获取工单概述失败", Toast.LENGTH_LONG).show();
+            //Toast.makeText(login.this, "获取工单概述失败", Toast.LENGTH_LONG).show();
 
         }
 

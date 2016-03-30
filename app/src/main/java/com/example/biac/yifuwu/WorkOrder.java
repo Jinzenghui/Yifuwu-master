@@ -50,8 +50,10 @@ public class WorkOrder extends Activity {
         processing_orders = overviewInfo.getData().getProcessing_work_orders();
         completed_work_orders = overviewInfo.getData().getCompleted_work_orders();
 
-        userId =  getIntent().getIntExtra("UserId",0);
+        userId =  getIntent().getIntExtra("UserId", 0);
         Log.i("Jin-workorder", userId +"");
+
+        Log.i("Jin-completed", completed_work_orders+"");
 
         initView();
 
@@ -63,7 +65,7 @@ public class WorkOrder extends Activity {
                     Toast.makeText(WorkOrder.this, "没有新工单", Toast.LENGTH_LONG).show();
                 }else {
 
-                    getNewOrdersOverviewInfo(1+"");
+                    getNewOrdersOverviewInfo(2+"", userId);
                 }
 
             }
@@ -78,7 +80,7 @@ public class WorkOrder extends Activity {
                 {
                     Toast.makeText(WorkOrder.this, "没有正在处理的工单", Toast.LENGTH_LONG).show();
                 }else{
-                    getNewOrdersOverviewInfo(2+"");
+                    getNewOrdersOverviewInfo(3+"", userId);
                 }
 
             }
@@ -87,7 +89,7 @@ public class WorkOrder extends Activity {
         orderdoneBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getNewOrdersOverviewInfo(3+"");
+                getNewOrdersOverviewInfo(4+"", userId);
             }
         });
 
@@ -122,7 +124,7 @@ public class WorkOrder extends Activity {
         orderprocessingBtn.setText("处理中：" + processing_orders + "件");
     }
 
-    public void getNewOrdersOverviewInfo(final String work_order_status)
+    public void getNewOrdersOverviewInfo(final String work_order_status, final int user_id)
     {
         final Gson gson = new Gson();
 
@@ -142,10 +144,15 @@ public class WorkOrder extends Activity {
 
                     newOdersOverviewInfo = gson.fromJson(response.body().charStream(), NewOdersOverviewInfo.class);
 
+                    Log.i("Jin-ordersOverview-Info", newOdersOverviewInfo.getText());
+                    Log.i("Jin-ordersOverview-Info", newOdersOverviewInfo.getResult() + "");
+                    Log.i("Jin-ordersOverview-Info", newOdersOverviewInfo.getSum() + "");
+
                     Intent intent = new Intent(WorkOrder.this, PendingOrder.class);
                     intent.putExtra("FirstPageNewOrderOverviewInfo", newOdersOverviewInfo);
-                    intent.putExtra("New_Orders_Number", new_orders);
+                    intent.putExtra("New_Orders_Number", newOdersOverviewInfo.getSum());
                     intent.putExtra("Work_order_status", work_order_status);
+                    intent.putExtra("User_id", user_id);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
 
@@ -155,11 +162,11 @@ public class WorkOrder extends Activity {
             }
         };
 
-        RequestBody body = new FormEncodingBuilder().add("work_order_status", work_order_status).add("page", 0 + "").add("num", 3 + "").build();
+        RequestBody body = new FormEncodingBuilder().add("work_order_status", work_order_status).add("page", 1 + "").add("num", 3 + "").add("user_id", user_id + "").build();
 
         try{
 
-            NetUtils.postJson("http://120.27.106.26/app/getNewOrdersOverviewInfo", body, this.getApplication(), callback);
+            NetUtils.postJson("http://120.27.106.26/app/getSelectedOrdersOverviewInfo", body, this.getApplication(), callback);
 
         }catch(IOException e){
 

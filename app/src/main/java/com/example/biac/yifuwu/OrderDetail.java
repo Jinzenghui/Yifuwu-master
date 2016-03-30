@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -27,7 +28,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import Pojo.AcceptOrderMessage;
+import Pojo.GuestbookMessage;
 import Pojo.NewOrderDetailInfo;
+import Pojo.PreDealResults;
 import Utils.NetUtils;
 
 public class OrderDetail extends Activity {
@@ -37,10 +40,17 @@ public class OrderDetail extends Activity {
 
     private Button acceptBtn, giveupBtn;
 
+    private static final int GUESTBOOKSIZE = 1;
+
+    //private static final int ACCEPT = 2;
+
+    private int user_id;
+
     private NewOrderDetailInfo newOrderDetailInfo;
 
     private TextView guestBookTextView, preProcessingMessageTextView;
 
+    private String work_order_id;
 
     int minute;
     int second;
@@ -170,7 +180,21 @@ public class OrderDetail extends Activity {
             }
         }
 
+
+
     };
+
+    private Handler handler2 = new Handler(){
+
+        @Override
+        public void handleMessage(android.os.Message msg){
+
+            String thing = (String) msg.obj;
+            Toast.makeText(OrderDetail.this, "用户没有留言", Toast.LENGTH_LONG).show();
+
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,6 +203,10 @@ public class OrderDetail extends Activity {
         setContentView(R.layout.activity_order_detail);
 
         newOrderDetailInfo = (NewOrderDetailInfo)getIntent().getParcelableExtra("NewOrderDetailInfo");
+        work_order_id = (String)getIntent().getStringExtra("Work_Order_Id");
+        user_id = (int)getIntent().getIntExtra("User_Id",0);
+
+        Log.i("Jin-remaining-time", newOrderDetailInfo.getData().getRemaining_time());
 
         String remaining_time =  "0000-00-00 " + newOrderDetailInfo.getData().getRemaining_time();
         Date date = null;
@@ -197,25 +225,13 @@ public class OrderDetail extends Activity {
         minute = cal.get(Calendar.MINUTE);
         second = cal.get(Calendar.SECOND);
 
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getWork_order_id());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getWork_order_level());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getCreate_time());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getRemaining_time());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getWork_order_type_code());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getComplaint_tele_num());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getComplaint_time());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getComplaint_position());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getMessage());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getGps_lon());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getGps_lat());
-//        Log.i("Jin123456", newOrderDetailInfo.getData().getPre_deal_result());
-
         initView();
 
         acceptBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                acceptOrder(work_order_id, user_id);
             }
         });
 
@@ -229,8 +245,7 @@ public class OrderDetail extends Activity {
         guestBookTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(OrderDetail.this, Guestbook.class);
-                startActivity(intent);
+                getGuestbookMessage(work_order_id);
             }
         });
 
@@ -317,7 +332,7 @@ public class OrderDetail extends Activity {
 
     //显示投诉类型
     public void setTypeTextView(){
-        typeTextView.setText("类        型   " + newOrderDetailInfo.getData().getWork_order_type_code() );
+        typeTextView.setText("类        型   " + newOrderDetailInfo.getData().getWork_order_type() );
     }
 
     //显示地区
@@ -332,7 +347,7 @@ public class OrderDetail extends Activity {
 
     //显示故障现象
     public void setSymptomTextView(){
-        symptomTextView.setText("故障现象    " + newOrderDetailInfo.getData().getWork_order_type_code());
+        symptomTextView.setText("故障现象    " + newOrderDetailInfo.getData().getWork_order_type());
     }
 
     //显示投诉时间
@@ -356,8 +371,7 @@ public class OrderDetail extends Activity {
         preprocessingTextView.setText(newOrderDetailInfo.getData().getPre_deal_result());
     }
 
-
-    public void acceptOrder(String work_order_id)
+    public void acceptOrder(String work_order_id, int user_id)
     {
         final Gson gson = new Gson();
 
@@ -380,23 +394,12 @@ public class OrderDetail extends Activity {
 
                     if(acceptOrderMessage.getResult() == 0){
 
-                        Toast.makeText(OrderDetail.this, "接单成功", Toast.LENGTH_SHORT).show();
+                        Log.i("Jin-accept", "接单成功");
 
                     }else if(acceptOrderMessage.getResult() == -1){
 
-                        Toast.makeText(OrderDetail.this, "接单失败" + acceptOrderMessage.getText(), Toast.LENGTH_LONG).show();
-
+                        Log.i("Jin-accept", "接单失败");
                     }
-
-
-
-
-
-//                    Intent intent = new Intent(WorkOrder.this, PendingOrder.class);
-//                    intent.putExtra("FirstPageNewOrderOverviewInfo", newOdersOverviewInfo);
-//                    intent.putExtra("New_Orders_Number", new_orders);
-//                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    startActivity(intent);
 
                 }else{
                     throw new IOException("Unexpected code " + response);
@@ -404,7 +407,7 @@ public class OrderDetail extends Activity {
             }
         };
 
-        RequestBody body = new FormEncodingBuilder().add("work_order_id", work_order_id + "").add("handle_action", 2 + "").build();
+        RequestBody body = new FormEncodingBuilder().add("work_order_id", work_order_id).add("handle_action", 2 + "").add("user_id", user_id + "").build();
 
         try{
 
@@ -418,8 +421,110 @@ public class OrderDetail extends Activity {
 
     }
 
+    public void getGuestbookMessage(String work_order_id){
+
+        final Gson gson = new Gson();
+
+        Callback callback = new Callback() {
 
 
+
+            @Override
+            public void onFailure(Request request, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+
+                GuestbookMessage guestbookMessage = new GuestbookMessage();
+
+                if(response.isSuccessful()){
+
+                    guestbookMessage = gson.fromJson(response.body().charStream(), GuestbookMessage.class);
+
+                    Log.i("Jin-guestbook", guestbookMessage.getText() + "");
+                    Log.i("Jin-guestbook", guestbookMessage.getResult() + "");
+                    Log.i("Jin-guestbook", guestbookMessage.getData().size() + "");
+
+                    if(guestbookMessage.getData().size() == 0){
+
+                        Message message = Message.obtain();
+                        message.obj = "没有留言";
+                        message.what = GUESTBOOKSIZE;
+                        handler2.sendMessage(message);
+                    }else if(guestbookMessage.getData().size() > 0) {
+
+                        Intent intent = new Intent(OrderDetail.this, Guestbook.class);
+                        intent.putExtra("GuestbookMessage", guestbookMessage);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    }
+
+                }else{
+                    throw new IOException("Unexpected code " + response);
+                }
+
+            }
+        };
+
+        try{
+            Log.i("Jin-work-order-id", work_order_id);
+
+            NetUtils.getJson("http://120.27.106.26/app/getMessageDetails?work_order_id=" + work_order_id, this.getApplication(), callback);
+
+        }catch(IOException e){
+            Toast.makeText(OrderDetail.this, "无用户留言", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void getPreDealResults(String work_order_id){
+
+        final Gson gson = new Gson();
+
+        Callback callback = new Callback() {
+
+
+
+            @Override
+            public void onFailure(Request request, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+
+                PreDealResults preDealResults = new PreDealResults();
+
+                if(response.isSuccessful()){
+
+                    preDealResults = gson.fromJson(response.body().charStream(), PreDealResults.class);
+
+                    Log.i("Jin-guestbook2", preDealResults.getText() + "");
+                    Log.i("Jin-guestbook2", preDealResults.getResult() + "");
+
+
+                    Intent intent = new Intent(OrderDetail.this, Preprocessingdetailmessage.class);
+                    intent.putExtra("PreDealResults", preDealResults);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+
+                }else{
+                    throw new IOException("Unexpected code " + response);
+                }
+
+            }
+        };
+
+        try{
+            Log.i("Jin-work-order-id", work_order_id);
+
+            NetUtils.getJson("http://120.27.106.26/app/getPreDealResults?work_order_id=" + work_order_id, this.getApplication(), callback);
+
+        }catch(IOException e){
+            Toast.makeText(OrderDetail.this, "无预处理信息", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 
 
